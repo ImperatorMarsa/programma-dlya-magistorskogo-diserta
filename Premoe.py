@@ -19,13 +19,14 @@ import numba as nb
 import numpy as np
 import math
 import pickle
+import time
 from random import random, gauss
 
 np.warnings.filterwarnings("ignore")
 
 # <+>!=<+>!=<+>!=___Fundamental'nie Poctoyannie___0<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 CisloChastic = 100
-KolvoIteraciy = 3
+KolvoIteraciy = 30
 
 # Paskal*sekunda
 Vyazkost = 2.15e-3
@@ -284,7 +285,7 @@ def RotatinVec(vec, axis, ugol):
 
 @nb.jit(nopython=True, parallel=True)
 def fu():
-    print("\n     += Poehali +=")
+    print("\n     += Поехали =+")
 
 
 # Funkciya generiruet massiv dinamichiskih peremennih chastic
@@ -327,26 +328,29 @@ fu()
 
 # =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= 
 Chasichki = createrChastic()
-Evaluciya = np.array([])
-Evaluciya = np.append(Evaluciya, Chasichki)
-print(Chasichki[0])
+# Evaluciya = np.array([])
+# Evaluciya = np.append(Evaluciya, Chasichki)
+# print(Chasichki[0])
 
+
+start_time=time.time()
 # s(Chasichki)
 for N in range(KolvoIteraciy):
-    print("\rProshlo %d iz %d \t\tMagnitnoe pole=%eH" % (N, KolvoIteraciy, H(N)), end="")
+    print("\rВыполнено %d из %d итераций \t\tМагнитное поле=%eH" % (N+1, KolvoIteraciy, H(N)), end="")
 
     Chasichki = MathKernel(Chasichki, N)
-    Evaluciya = np.append(Evaluciya, Chasichki)
+    # Evaluciya = np.append(Evaluciya, Chasichki)
     Chasichki = GeneralLoop(Chasichki)
 
-print("\n", Chasichki[0])
+# print("\n", Chasichki[0])
+print('\nВремя выполнения составило {}'.format(time.time()-start_time))
 
-with open("C:/SciData/data_Premoe.pickle", "wb") as f:
-    pickle.dump(
-        Evaluciya.reshape(
-            (int(len(Evaluciya) / CisloChastic / 6 / 3), CisloChastic, 6, 3)
-        ),
-        f,
-    )
-f.close()
+# with open("C:/SciData/data_Premoe.pickle", "wb") as f:
+#     pickle.dump(
+#         Evaluciya.reshape(
+#             (int(len(Evaluciya) / CisloChastic / 6 / 3), CisloChastic, 6, 3)
+#         ),
+#         f,
+#     )
+# f.close()
 # =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= 
