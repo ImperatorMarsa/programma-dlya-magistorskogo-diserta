@@ -290,7 +290,7 @@ def fu():
 # Funkciya generiruet massiv dinamichiskih peremennih chastic
 @nb.jit(nopython=True, parallel=True)
 def createrChastic():
-    pom = np.ones((CisloChastic, 6, 3))
+    pom = np.ones((CisloChastic, 7, 3))
     for i in range(CisloChastic):
         pom[i][0] = (
             np.ones(3) * GraniciVselennoy
