@@ -112,7 +112,7 @@ def SteerOttalk(mI, mJ):
     # Dlina volosni v metrah
     q = 2e-9
 
-    # Diametr chastici s volosney
+    # Диаметр частиц с учётом длины молекул ПАВ
     a = mJ[ParamCastic][R_Chastici] + mI[ParamCastic][R_Chastici] + 2 * q
 
     if dist < (mJ[ParamCastic][R_Chastici] + mI[ParamCastic][R_Chastici] + 2 * q):
