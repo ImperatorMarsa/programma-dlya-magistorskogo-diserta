@@ -333,7 +333,7 @@ print(Chasichki[0])
 
 # s(Chasichki)
 for N in range(KolvoIteraciy):
-    print("\rProshlo %d iz %d \t\tMagnitnoe pole=%e" % (N, KolvoIteraciy, H(N)), end="")
+    print("\rProshlo %d iz %d \t\tMagnitnoe pole=%eH" % (N, KolvoIteraciy, H(N)), end="")
 
     Chasichki = MathKernel(Chasichki, N)
     Evaluciya = np.append(Evaluciya, Chasichki)
