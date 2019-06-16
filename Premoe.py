@@ -15,7 +15,6 @@ R_Chastici = 0  # ::: Radiuse chastici
 M_Chastici = 1  # ::: Massa odnoy chastici
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-import numba as nb
 import numpy as np
 import math
 import pickle
@@ -38,7 +37,7 @@ kT = 273.16 * 1.38e-23
 # Genri/метр
 U0 = 4e-7 * np.pi
 
-# Метров 
+# Метров
 Radiuse = 6.66e-9
 # килограмм/метр^3
 Plotnost = 5000
@@ -53,7 +52,6 @@ Alpha = 5 / GraniciVselennoy
 # <|:|><|:|><|:|><|:|><|:|>__Osnovnaya_Proga__!<|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|>
 
 
-@nb.jit(nopython=True, parallel=True)
 def PrimoySila(mI, mJ, n, magN):
     rIJ = (mI[RadVek] - mJ[RadVek]) + n
     magR = math.sqrt(rIJ[0] ** 2 + rIJ[1] ** 2 + rIJ[2] ** 2)
@@ -72,7 +70,6 @@ def PrimoySila(mI, mJ, n, magN):
     return mI
 
 
-@nb.jit(nopython=True, parallel=True)
 def PrimoyMoment(mI, mJ, n, magN):
     rIJ = (mI[RadVek] - mJ[RadVek]) + n
     magR = math.sqrt(rIJ[0] ** 2 + rIJ[1] ** 2 + rIJ[2] ** 2)
@@ -87,7 +84,6 @@ def PrimoyMoment(mI, mJ, n, magN):
     return mI
 
 
-@nb.jit(nopython=True, parallel=True)
 def VneshPole(mI, N):
     B = np.array([1, 0, 0]) * H(N) * U0
     mI[VEkMomentov] += Cross(mI[NaprUgl], B)
@@ -95,7 +91,6 @@ def VneshPole(mI, N):
 
 
 # https://www.desmos.com/calculator/ddxmffkqrj
-@nb.jit(nopython=True, parallel=True)
 def SteerOttalk(mI, mJ):
     pom = mI[RadVek] - mJ[RadVek]
     dist = math.sqrt(pom[0] ** 2 + pom[1] ** 2 + pom[2] ** 2)
@@ -124,7 +119,6 @@ def SteerOttalk(mI, mJ):
 
 
 # https://www.desmos.com/calculator/bhjmf8p0pf
-@nb.jit(nopython=True, parallel=True)
 def Kinematika(C):
     pom = StahostSmeshLineynoe(C[ParamCastic][R_Chastici])
     C[VecSkor] = C[RadVek]
@@ -154,7 +148,6 @@ def Kinematika(C):
     return C
 
 
-@nb.jit(nopython=True, parallel=True)
 def PorvrkaGrani(mass):
     if mass[0][0] > GraniciVselennoy:
         mass[0] = np.array([mass[0][0] - 2 * GraniciVselennoy, mass[0][1], mass[0][2]])
@@ -174,14 +167,12 @@ def PorvrkaGrani(mass):
     return mass
 
 
-@nb.jit(nopython=True, parallel=True)
 def StahostSmeshLineynoe(Radiuse):
     difuz = kT / (6.0 * np.pi * Radiuse * Vyazkost)
 
     return RandNormVec() * ((2 * difuz * Time) ** 0.5 * gauss(0, 1))
 
 
-@nb.jit(nopython=True, parallel=True)
 def StahostSmeshUglovoe(Radiuse):
     difuz = kT / (8.0 * np.pi * Radiuse ** 3 * Vyazkost)
 
@@ -191,14 +182,12 @@ def StahostSmeshUglovoe(Radiuse):
 # <|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|><|:|>
 
 
-@nb.jit(nopython=True, parallel=True)
 def H(N):
     # a = N+1
     # Ампер/метр
     return 73e5 * math.cos(np.pi / 100 * N)
 
 
-@nb.jit(nopython=True, parallel=True)
 def GeneralLoop(mass):
     for x in range(len(mass)):
         mass[x] = Kinematika(mass[x])
@@ -206,7 +195,6 @@ def GeneralLoop(mass):
     return mass
 
 
-@nb.jit(nopython=True, parallel=True)
 def MathKernel(mass, N):
     for i in range(len(mass)):
         mass[i] = VneshPole(mass[i], N)
@@ -238,7 +226,6 @@ def MathKernel(mass, N):
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 
 
-@nb.jit(nopython=True, parallel=True)
 def Cross(a, b):
     return np.array(
         [
@@ -249,12 +236,10 @@ def Cross(a, b):
     )
 
 
-@nb.jit(nopython=True, parallel=True)
 def Dot(a, b):
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 
 
-@nb.jit(nopython=True, parallel=True)
 def RandNormVec():
     a1 = 1 - 2 * random()
     a2 = 1 - 2 * random()
@@ -264,7 +249,7 @@ def RandNormVec():
     return np.array([a1 / sq, a2 / sq, a3 / sq])
 
 
-@nb.jit(nopython=True, parallel=True)  # Oshipka skritaya
+# Oshipka skritaya
 def RotatinVec(vec, axis, ugol):
     nK = math.sqrt(axis[0] ** 2 + axis[2] ** 2 + axis[1] ** 2)
     axis[0], axis[1], axis[2] = axis[0] / nK, axis[1] / nK, axis[2] / nK
@@ -283,13 +268,11 @@ def RotatinVec(vec, axis, ugol):
     return np.array([p0, p1, p2])
 
 
-@nb.jit(nopython=True, parallel=True)
 def fu():
     print("\n     += Поехали =+")
 
 
 # Funkciya generiruet massiv dinamichiskih peremennih chastic
-@nb.jit(nopython=True, parallel=True)
 def createrChastic():
     pom = np.ones((CisloChastic, 7, 3))
     for i in range(CisloChastic):
@@ -309,41 +292,28 @@ def createrChastic():
 
     return pom
 
-
-fu()
-
-
-# @profile
-# def s(Chasichki):
-#     Evaluciya = np.array([])
-#     Evaluciya = np.append(Evaluciya, Chasichki)
-#     for N in range(KolvoIteraciy):
-#         # if True:
-#         print('\r', N, end='')
-
-#         Chasichki = MathKernel(Chasichki)
-#         Chasichki = GeneralLoop(Chasichki)
-#         Evaluciya = np.append(Evaluciya, Chasichki)
-
-
-# =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= 
+# =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>=
 Chasichki = createrChastic()
 # Evaluciya = np.array([])
 # Evaluciya = np.append(Evaluciya, Chasichki)
 # print(Chasichki[0])
 
 
-start_time=time.time()
+start_time = time.time()
 # s(Chasichki)
 for N in range(KolvoIteraciy):
-    print("\rВыполнено %d из %d итераций \t\tМагнитное поле=%eH" % (N+1, KolvoIteraciy, H(N)), end="")
+    print(
+        "\rВыполнено %d из %d итераций \t\tМагнитное поле=%eH"
+        % (N + 1, KolvoIteraciy, H(N)),
+        end="",
+    )
 
     Chasichki = MathKernel(Chasichki, N)
     # Evaluciya = np.append(Evaluciya, Chasichki)
     Chasichki = GeneralLoop(Chasichki)
 
 # print("\n", Chasichki[0])
-print('\nВремя выполнения составило {}'.format(time.time()-start_time))
+print("\nВремя выполнения составило {}".format(time.time() - start_time))
 
 # with open("C:/SciData/data_Premoe.pickle", "wb") as f:
 #     pickle.dump(
@@ -353,4 +323,4 @@ print('\nВремя выполнения составило {}'.format(time.time
 #         f,
 #     )
 # f.close()
-# =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= 
+# =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>=
