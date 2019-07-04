@@ -8,18 +8,18 @@ Original file is located at
 """
 
 #%%
-import numpy as np
-from numba import jit
 import math
-import os.path
-import pickle
 import time
-from random import random, gauss
-
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
-
+import pickle
+import os.path
+import numpy as xp
+from numba import jit
 import matplotlib.pyplot as plt
-import numpy as np
+from random import random, gauss
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+# import cupy as cp
+
+xp = xp
 
 # <+>!=<+>!=<+>!=___Fundamental'nie Poctoyannie___0<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 #@title Настройка
@@ -40,7 +40,7 @@ PostoyanayaBolcmana = 1.38e-23
 Temperature = 273.16 #@param {type: "number"}
 kT = Temperature * PostoyanayaBolcmana
 
-U0 = 4e-7 * np.pi # Genri/метр
+U0 = 4e-7 * xp.pi # Genri/метр
 # Метров
 Radiuse = 6.66e-9 #@param {type: "number"}
 
@@ -48,7 +48,7 @@ H_max = 7.3e3 #@param {type: "number"}
 
 Plotnost = 5000 # килограмм/метр^3
 
-Obyom = 4 / 3 * np.pi * Radiuse ** 3  # Метров^3
+Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
 
 Massa = Obyom * Plotnost  # килограмм
 
@@ -64,7 +64,7 @@ GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
 #@markdown ---
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 
-pickelPath = "//content/drive/My Drive/Проектные работы(Курсач; Диплм)/MagistarskiyDisert/ExperimenralResult/data_.pickle"
+pickelPath = "C:\\Users\\sitnikov\\Documents\\Python Scripts\\data_.pickle"
 scince_data = {
     'Const' : {
         'CisloChastic' : CisloChastic,
@@ -112,7 +112,7 @@ def PrimoySila(mI, mJ, n, magN):
     mI[VekSil] += (
         3
         * U0
-        / (4 * np.pi * magR ** 5)
+        / (4 * xp.pi * magR ** 5)
         * (
             Dot(mI[NaprUgl], rIJ) * mJ[NaprUgl]
             + Dot(mJ[NaprUgl], rIJ) * mI[NaprUgl]
@@ -130,7 +130,7 @@ def PrimoyMoment(mI, mJ, n, magN):
 
     B_I = (
         U0
-        / (4 * np.pi)
+        / (4 * xp.pi)
         * (Dot(mI[NaprUgl], rIJ) * 3 * rIJ / (magR) ** 5 - mI[NaprUgl] / (magR) ** 3)
     )
     mI[VekMomentov] += Cross(mJ[NaprUgl], B_I)
@@ -139,7 +139,7 @@ def PrimoyMoment(mI, mJ, n, magN):
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def VneshPole(mI, N):
-    B = np.array([1, 0, 0]) * H(N) * U0
+    B = xp.array([1, 0, 0]) * H(N) * U0
     mI[VekMomentov] += Cross(mI[NaprUgl], B)
     return mI
 
@@ -168,7 +168,7 @@ def SteerOttalk(mI, mJ):
 
     if dist < (mJ[ParamCastic][R_Chastici] + mI[ParamCastic][R_Chastici] + 2 * q):
         e = math.exp(-B * (dist / a - 1))
-        mI[VekSil] += A * 3 * U0 * M ** 2 / (4 * np.pi * a ** 4) * e * pom
+        mI[VekSil] += A * 3 * U0 * M ** 2 / (4 * xp.pi * a ** 4) * e * pom
 
     return mI
 
@@ -180,7 +180,7 @@ def Kinematika(C):
     C[VecSkor] = C[RadVek]
     C[RadVek] = (
         C[RadVek]
-        + C[VekSil] / (6.0 * np.pi * C[ParamCastic][R_Chastici] * Vyazkost) * Time
+        + C[VekSil] / (6.0 * xp.pi * C[ParamCastic][R_Chastici] * Vyazkost) * Time
         + pom
     )
     C[VecSkor] = (C[RadVek] - C[VecSkor]) / Time
@@ -189,48 +189,48 @@ def Kinematika(C):
     C[VekVrash] = C[NaprUgl]
     DeltaAlfa = (
         C[VekMomentov]
-        / (8.0 * np.pi * C[ParamCastic][R_Chastici] ** 3 * Vyazkost)
+        / (8.0 * xp.pi * C[ParamCastic][R_Chastici] ** 3 * Vyazkost)
         * Time
         + pom
-    )  # np.linalg.norm(DeltaAlfa) #
+    )  # xp.linalg.norm(DeltaAlfa) #
     buf = math.sqrt(DeltaAlfa[0] ** 2 + DeltaAlfa[1] ** 2 + DeltaAlfa[2] ** 2)
     C[NaprUgl] = RotatinVec(C[NaprUgl], DeltaAlfa, buf)
     C[VekVrash] = (C[NaprUgl] - C[VekVrash]) / Time
 
     C = PorvrkaGrani(C)
-    C[VekSil] = np.zeros(3)
-    C[VekMomentov] = np.zeros(3)
+    C[VekSil] = xp.zeros(3)
+    C[VekMomentov] = xp.zeros(3)
 
     return C
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def PorvrkaGrani(mass):
     if mass[0][0] > GraniciVselennoy:
-        mass[0] = np.array([mass[0][0] - 2 * GraniciVselennoy, mass[0][1], mass[0][2]])
+        mass[0] = xp.array([mass[0][0] - 2 * GraniciVselennoy, mass[0][1], mass[0][2]])
     elif mass[0][0] < -GraniciVselennoy:
-        mass[0] = np.array([mass[0][0] + 2 * GraniciVselennoy, mass[0][1], mass[0][2]])
+        mass[0] = xp.array([mass[0][0] + 2 * GraniciVselennoy, mass[0][1], mass[0][2]])
 
     if mass[0][1] > GraniciVselennoy:
-        mass[0] = np.array([mass[0][0], mass[0][1] - 2 * GraniciVselennoy, mass[0][2]])
+        mass[0] = xp.array([mass[0][0], mass[0][1] - 2 * GraniciVselennoy, mass[0][2]])
     elif mass[0][1] < -GraniciVselennoy:
-        mass[0] = np.array([mass[0][0], mass[0][1] + 2 * GraniciVselennoy, mass[0][2]])
+        mass[0] = xp.array([mass[0][0], mass[0][1] + 2 * GraniciVselennoy, mass[0][2]])
 
     if mass[0][2] > GraniciVselennoy:
-        mass[0] = np.array([mass[0][0], mass[0][1], mass[0][2] - 2 * GraniciVselennoy])
+        mass[0] = xp.array([mass[0][0], mass[0][1], mass[0][2] - 2 * GraniciVselennoy])
     elif mass[0][2] < -GraniciVselennoy:
-        mass[0] = np.array([mass[0][0], mass[0][1], mass[0][2] + 2 * GraniciVselennoy])
+        mass[0] = xp.array([mass[0][0], mass[0][1], mass[0][2] + 2 * GraniciVselennoy])
 
     return mass
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def StahostSmeshLineynoe(Radiuse):
-    difuz = kT / (6.0 * np.pi * Radiuse * Vyazkost)
+    difuz = kT / (6.0 * xp.pi * Radiuse * Vyazkost)
 
     return RandNormVec() * ((2 * difuz * Time) ** 0.5 * gauss(0, 1))
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def StahostSmeshUglovoe(Radiuse):
-    difuz = kT / (8.0 * np.pi * Radiuse ** 3 * Vyazkost)
+    difuz = kT / (8.0 * xp.pi * Radiuse ** 3 * Vyazkost)
 
     return RandNormVec() * ((2 * difuz * Time) ** 0.5 * gauss(0, 1))
 
@@ -241,7 +241,7 @@ def StahostSmeshUglovoe(Radiuse):
 def H(N):
     # a = N+1
     # Ампер/метр
-    return H_max * math.cos(np.pi / 2500 * N)
+    return H_max * math.cos(xp.pi / 2500 * N)
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def GeneralLoop(mass):
@@ -263,7 +263,7 @@ def MathKernel(mass, N):
                 for Y in range(-pom1, pom1 + 1):
                     pom2 = int(math.sqrt(PredelSumm ** 2 - X ** 2 - Y ** 2))
                     for Z in range(-pom2, pom2 + 1):
-                        n = np.array(
+                        n = xp.array(
                             [
                                 X * GraniciVselennoy * 2,
                                 Y * GraniciVselennoy * 2,
@@ -282,7 +282,7 @@ def MathKernel(mass, N):
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 @jit(fastmath = True, nopython = True, parallel = True)
 def Cross(a, b):
-    return np.array(
+    return xp.array(
         [
             a[1] * b[2] - a[2] * b[1],
             a[2] * b[0] - a[0] * b[2],
@@ -301,14 +301,14 @@ def RandNormVec():
     a3 = 1 - 2 * random()
     sq = math.sqrt(a1 ** 2 + a2 ** 2 + a3 ** 2)
 
-    return np.array([a1 / sq, a2 / sq, a3 / sq])
+    return xp.array([a1 / sq, a2 / sq, a3 / sq])
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def Culculete(pom):
-    return np.sqrt(np.sum(np.square(np.copy(pom.reshape(len(pom), 7 * 3)[:, NaprUgl * 3:NaprUgl * 3 + 3])), axis = 1)) * MagMom
+    return xp.sqrt(xp.sum(xp.square(xp.copy(pom.reshape(len(pom), 7 * 3)[:, NaprUgl * 3:NaprUgl * 3 + 3])), axis = 1)) * MagMom
 
 def Koordi(pom):
-    return np.copy(pom.reshape(len(pom), 7 * 3)[:, RadVek * 3:RadVek * 3 + 3])
+    return xp.copy(pom.reshape(len(pom), 7 * 3)[:, RadVek * 3:RadVek * 3 + 3])
 
 
 @jit(fastmath = True, nopython = True, parallel = True)
@@ -326,7 +326,7 @@ def RotatinVec(vec, axis, ugol):
     p0 = q1 * vec[0] + q2 * vec[1] + q3 * vec[2]
     p1 = q4 * vec[0] + q5 * vec[1] + q6 * vec[2]
     p2 = q7 * vec[0] + q8 * vec[1] + q9 * vec[2]
-    return np.array([p0, p1, p2])
+    return xp.array([p0, p1, p2])
 
 
 def fu():
@@ -336,7 +336,7 @@ def fu():
 # Funkciya generiruet massiv dinamichiskih peremennih chastic
 def createrChastic(CisloChastic):
     pom = [[]]
-    pom[-1].append(2 * GraniciVselennoy * np.random.rand(3) - GraniciVselennoy)
+    pom[-1].append(2 * GraniciVselennoy * xp.random.rand(3) - GraniciVselennoy)
     pom[-1].append(RandNormVec() * MagMom)
 
     pom[-1].append([0, 0, 0])
@@ -349,18 +349,18 @@ def createrChastic(CisloChastic):
     for i in range(1, CisloChastic):
         print(
             "\rСоздано %d из %d частиц"
-#             % (len(pom), CisloChastic),
+            % (len(pom), CisloChastic),
             end="",
         )
-        koord = 2 * GraniciVselennoy * np.random.rand(3) - GraniciVselennoy
+        koord = 2 * GraniciVselennoy * xp.random.rand(3) - GraniciVselennoy
         new_koord = True
         while new_koord:
             for x in pom:
-                if np.absolute(np.sqrt(np.sum(np.square(x[0]))) - np.sqrt(np.sum(np.square(koord)))) > 2 * (Radiuse + Dlina_PAV):
+                if xp.absolute(xp.sqrt(xp.sum(xp.square(x[0]))) - xp.sqrt(xp.sum(xp.square(koord)))) > 2 * (Radiuse + Dlina_PAV):
                     new_koord = False
                 else:
                     new_koord = True
-                    koord = 2 * GraniciVselennoy * np.random.rand(3) - GraniciVselennoy
+                    koord = 2 * GraniciVselennoy * xp.random.rand(3) - GraniciVselennoy
         
         pom.append([])            
         pom[-1].append(koord)
@@ -374,8 +374,8 @@ def createrChastic(CisloChastic):
 
         pom[-1].append([Radiuse, Massa, 0])
 
-    print(np.max(Koordi(np.array(pom))))
-    return np.array(pom)
+    print(xp.max(Koordi(xp.array(pom))))
+    return xp.array(pom)
 #%%
 # =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>=
 new_experiment = True
@@ -417,7 +417,7 @@ if Iteraciy > 0:
         if time.time() - timeInterput > 600:
             print(
                 "\rВыполнено %d из %d итераций \t\tМагнитное поле=%eH"
-#                 % (N + 1, KolvoIteraciy, H(N)),
+                % (N + 1, KolvoIteraciy, H(N)),
                 end="",
             )
             f = open(pickelPath, 'wb+')
@@ -441,12 +441,12 @@ f.close()
 
 koordi = buffer['Varibles']['Chasichki'][0]
 koordi = Koordi(koordi)
-koordi = koordi * GraniciVselennoy / np.max(koordi)
+koordi = koordi * GraniciVselennoy / xp.max(koordi)
 
 fig = plt.figure(figsize=(12, 12))
 ax = fig.add_subplot(111, projection='3d')
 
-x, y, z = np.copy(koordi[:, :1]), np.copy(koordi[:, 1:2]), np.copy(koordi[:, 2:3])
+x, y, z = xp.copy(koordi[:, :1]), xp.copy(koordi[:, 1:2]), xp.copy(koordi[:, 2:3])
 ax.scatter(x, y, z, marker = 'o')
 
 plt.show()
@@ -454,19 +454,19 @@ fig.savefig("test_rasterization1.svg", dpi=350)
 
 fig, ax = plt.subplots()
 
-s = np.arange(0.0, len(buffer['Varibles']['Result']), 1)
+s = xp.arange(0.0, len(buffer['Varibles']['Result']), 1)
 ax.plot(s, buffer['Varibles']['Result'])
 
-s = np.arange(0.0, len(buffer['Varibles']['H']), 1)
+s = xp.arange(0.0, len(buffer['Varibles']['H']), 1)
 ax.plot(s, buffer['Varibles']['H'])
 
-plt.ylim(np.min(buffer['Varibles']['H']), np.max(buffer['Varibles']['H']))
+plt.ylim(xp.min(buffer['Varibles']['H']), xp.max(buffer['Varibles']['H']))
 ax.grid()
 fig.savefig("test_rasterization2.svg")
 plt.show()
 
 # 2366.5597999095917
-import numpy as np
+import numpy as xp
 import cupy as cp
 
 a = cp.linspace(-3, -1, 10)
