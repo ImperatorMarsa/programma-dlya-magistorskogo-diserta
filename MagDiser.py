@@ -12,14 +12,15 @@ import math
 import time
 import pickle
 import os.path
-import numpy as xp
+import numpy as np
 from numba import jit
 import matplotlib.pyplot as plt
 from random import random, gauss
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+from terminaltables import DoubleTable
 # import cupy as cp
 
-xp = xp
+xp = np
 
 # <+>!=<+>!=<+>!=___Fundamental'nie Poctoyannie___0<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 #@title Настройка
@@ -361,7 +362,7 @@ def createrChastic(CisloChastic):
                 else:
                     new_koord = True
                     koord = 2 * GraniciVselennoy * xp.random.rand(3) - GraniciVselennoy
-        
+
         pom.append([])            
         pom[-1].append(koord)
         pom[-1].append(RandNormVec() * MagMom)
@@ -374,7 +375,6 @@ def createrChastic(CisloChastic):
 
         pom[-1].append([Radiuse, Massa, 0])
 
-    print(xp.max(Koordi(xp.array(pom))))
     return xp.array(pom)
 #%%
 # =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>=
@@ -404,6 +404,25 @@ if Iteraciy > 0:
     scince_data['Varibles']['Chasichki'].append(Chasichki)
     scince_data['Varibles']['Result'].append(Culculete(Chasichki))
     scince_data['Varibles']['H'].append(H(0) * U0)
+    TABLE_DATA = (
+        ('Название параметра', 'Значеие', 'Единицы измерения'),
+        ('Число частиц', CisloChastic, 'шт.'),
+        ('Вязкость', Vyazkost, 'Па * с'),
+        ('Шаг времени', Time, 'с'),
+        ('Температура', Temperature, 'К'),
+        ('Радиус', Radiuse, 'м'),
+        ('Длина молекул ПАВ', Dlina_PAV, 'м'),
+        ('Плотность', Plotnost, 'кг / м^3'),
+        ('Максимум значения Н', H_max, 'А / м'),
+        ('Намаг. ед. массы', NamagnicEdiniciMassi, 'А / (м * кг)'),
+        ('Объёмная концентрация', Koncintraciya_obyomnaya, ''),
+        ('Размеры ячейки', GraniciVselennoy, 'м'),
+        ('Количество итераций', KolvoIteraciy, ''),
+    )
+    title = 'Параметры эксперимента'
+    table_instance = DoubleTable(TABLE_DATA, title)
+    print(table_instance.table, '\n')
+
     timeInterput = -time.time()
     for N in range(1, Iteraciy):
         scince_data['Varibles']['N'] += 1
