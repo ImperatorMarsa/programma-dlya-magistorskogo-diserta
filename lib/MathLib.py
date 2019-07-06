@@ -31,6 +31,7 @@ kT = Temperature * PostoyanayaBolcmana
 U0 = 4e-7 * xp.pi # Genri/метр
 # Метров
 Radiuse = 6.66e-9 #@param {type: "number"}
+Dlina_PAV = 2e-9 #@param {type: "number"}
 
 Hx_amplitud = 7.3e3 #@param {type: "number"}
 Frequency = 300 #@param {type: "number"}
@@ -43,7 +44,6 @@ Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
 
 Massa = Obyom * Plotnost  # килограмм
 
-Dlina_PAV = 2e-9 #@param {type: "number"}
 
 NamagnicEdiniciMassi = 4.78e5 #@param {type: "number"}
 MagMom = NamagnicEdiniciMassi * Obyom # Ампер*метр^2((namagnichenost' nasisheniya=4.78*10^5 Ампер/метр))
@@ -97,6 +97,29 @@ def _VneshPole(N, moment):
 
 VneshPole = np.vectorize(_VneshPole, otypes=[float], signature='(),(n)->(n)')
 
+
+# https://www.desmos.com/calculator/ddxmffkqrj
+@jit(fastmath = True, nopython = True, parallel = True)
+def _SteerOttalk(matrix, uglVek, radVek):
+    # Kakieto koefficienti #
+    A = 31.3
+    B = 73.0
+    # ######################
+    Rq2 = 2 * (Radiuse + Dlina_PAV)
+
+    distVek = xp.copy(matrix - radVek)
+    dist = xp.sqrt(xp.sum(xp.square(distVek)))
+    distVek /= dist
+    M = xp.sqrt(xp.sum(xp.square(xp.copy(uglVek))))
+    if dist <= Rq2:
+        return -distVek * dist * A * 3e-7 * M ** 2 / (Rq2 ** 4) * xp.exp(-B * (dist / Rq2 - 1))
+    else:
+        return xp.array([0, 0, 0], dtype = xp.float64)
+
+SteerOttalk = np.vectorize(_SteerOttalk, otypes=[float], signature='(m),(l),(k)->(k)')
+
+
+
 @jit(fastmath = True, nopython = True, parallel = True)
 def PrimoySila(mI, mJ, n, magN):
     rIJ = (mI[RadVek] - mJ[RadVek]) + n
@@ -127,35 +150,6 @@ def PrimoyMoment(mI, mJ, n, magN):
         * (Dot(mI[NaprUgl], rIJ) * 3 * rIJ / (magR) ** 5 - mI[NaprUgl] / (magR) ** 3)
     )
     mI[VekMomentov] += Cross(mJ[NaprUgl], B_I)
-
-    return mI
-
-
-# https://www.desmos.com/calculator/ddxmffkqrj
-@jit(fastmath = True, nopython = True, parallel = True)
-def SteerOttalk(mI, mJ):
-    pom = mI[RadVek] - mJ[RadVek]
-    dist = math.sqrt(pom[0] ** 2 + pom[1] ** 2 + pom[2] ** 2)
-    # F_ster=vector(0, 0, 0)
-
-    # Kakieto koefficienti #
-    A = 31.3
-    B = 73.0
-    # ######################
-
-    M = math.sqrt(
-        mI[NaprUgl][0] ** 2 + mI[NaprUgl][1] ** 2 + mI[NaprUgl][2] ** 2
-    )  # Magnitniy moment chastici
-
-    # Dlina volosni v metrah
-    q = Dlina_PAV
-
-    # Диаметр частиц с учётом длины молекул ПАВ
-    a = mJ[ParamCastic][R_Chastici] + mI[ParamCastic][R_Chastici] + 2 * q
-
-    if dist < (mJ[ParamCastic][R_Chastici] + mI[ParamCastic][R_Chastici] + 2 * q):
-        e = math.exp(-B * (dist / a - 1))
-        mI[VekSil] += A * 3 * U0 * M ** 2 / (4 * xp.pi * a ** 4) * e * pom
 
     return mI
 
