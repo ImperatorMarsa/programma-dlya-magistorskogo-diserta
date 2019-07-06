@@ -9,7 +9,64 @@ from terminaltables import DoubleTable
 # import cupy as cp
 
 xp = np
-H_max = 1
+# <+>!=<+>!=<+>!=___Fundamental'nie Poctoyannie___0<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
+#@title Настройка
+#@markdown Настройка переменных системы
+#@markdown ---
+
+CisloChastic = 234 #@param {type: "integer"}
+KolvoIteraciy = 3 #@param {type: "integer"}
+
+# Paskal*sekunda
+Vyazkost = 2.15e-3 #@param {type: "number"}
+
+# sekund
+Time = 1e-10 #@param {type: "number"}
+
+# 1.38e-23
+PostoyanayaBolcmana = 1.38e-23 
+Temperature = 273.16 #@param {type: "number"}
+kT = Temperature * PostoyanayaBolcmana
+
+U0 = 4e-7 * xp.pi # Genri/метр
+# Метров
+Radiuse = 6.66e-9 #@param {type: "number"}
+
+H_max = 7.3e3 #@param {type: "number"}
+
+Plotnost = 5000 # килограмм/метр^3
+
+Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
+
+Massa = Obyom * Plotnost  # килограмм
+
+Dlina_PAV = 2e-9 #@param {type: "number"}
+
+NamagnicEdiniciMassi = 4.78e5 #@param {type: "number"}
+MagMom = NamagnicEdiniciMassi * Obyom # Ампер*метр^2((namagnichenost' nasisheniya=4.78*10^5 Ампер/метр))
+
+# Метров
+Koncintraciya_obyomnaya = 0.10 #@param {type: "number"}
+GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
+
+#@markdown ---
+# <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Struktura massiva chastic:
+RadVek = 0  # ::: RadiuseVecrtor chastici v prostranstve
+NaprUgl = 1  # ::: Napravlyayushie kosinusi
+
+VecSkor = 2  # ::: Vektor skorosti
+VekVrash = 3  # ::: Vektor uglovjy skorosti
+
+VekSil = 4  # ::: Vektor Sili
+VekMomentov = 5  # ::: Vector momentaSil
+
+ParamCastic = 6  # ::: Parametri chastic: Radius, Massa, ...
+R_Chastici = 0  # ::: Radiuse chastici
+M_Chastici = 1  # ::: Massa odnoy chastici
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def PrimoySila(mI, mJ, n, magN):

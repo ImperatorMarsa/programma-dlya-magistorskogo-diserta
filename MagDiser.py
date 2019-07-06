@@ -30,40 +30,40 @@ xp = np
 #@markdown Настройка переменных системы
 #@markdown ---
 
-CisloChastic = 234 #@param {type: "integer"}
-KolvoIteraciy = 3 #@param {type: "integer"}
+m.CisloChastic = 234 #@param {type: "integer"}
+m.KolvoIteraciy = 3 #@param {type: "integer"}
 
 # Paskal*sekunda
-Vyazkost = 2.15e-3 #@param {type: "number"}
+m.Vyazkost = 2.15e-3 #@param {type: "number"}
 
 # sekund
-Time = 1e-10 #@param {type: "number"}
+m.Time = 1e-10 #@param {type: "number"}
 
 # 1.38e-23
-PostoyanayaBolcmana = 1.38e-23 
-Temperature = 273.16 #@param {type: "number"}
-kT = Temperature * PostoyanayaBolcmana
+m.PostoyanayaBolcmana = 1.38e-23 
+m.Temperature = 273.16 #@param {type: "number"}
+m.kT = Temperature * PostoyanayaBolcmana
 
-U0 = 4e-7 * xp.pi # Genri/метр
+m.U0 = 4e-7 * xp.pi # Genri/метр
 # Метров
-Radiuse = 6.66e-9 #@param {type: "number"}
+m.Radiuse = 6.66e-9 #@param {type: "number"}
 
-H_max = 7.3e3 #@param {type: "number"}
+m.H_max = 7.3e3 #@param {type: "number"}
 
-Plotnost = 5000 # килограмм/метр^3
+m.Plotnost = 5000 # килограмм/метр^3
 
-Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
+m.Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
 
-Massa = Obyom * Plotnost  # килограмм
+m.Massa = Obyom * Plotnost  # килограмм
 
-Dlina_PAV = 2e-9 #@param {type: "number"}
+m.Dlina_PAV = 2e-9 #@param {type: "number"}
 
-NamagnicEdiniciMassi = 4.78e5 #@param {type: "number"}
-MagMom = NamagnicEdiniciMassi * Obyom # Ампер*метр^2((namagnichenost' nasisheniya=4.78*10^5 Ампер/метр))
+m.NamagnicEdiniciMassi = 4.78e5 #@param {type: "number"}
+m.MagMom = NamagnicEdiniciMassi * Obyom # Ампер*метр^2((namagnichenost' nasisheniya=4.78*10^5 Ампер/метр))
 
 # Метров
-Koncintraciya_obyomnaya = 0.10 #@param {type: "number"}
-GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
+m.Koncintraciya_obyomnaya = 0.10 #@param {type: "number"}
+m.GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
 
 #@markdown ---
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
@@ -71,20 +71,20 @@ GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
 pickelPath = "C:\\Users\\sitnikov\\Documents\\Python Scripts\\data_.pickle"
 scince_data = {
     'Const' : {
-        'CisloChastic' : CisloChastic,
-        'Vyazkost' : Vyazkost,
-        'Time' : Time,
-        'Temperature' : Temperature,
-        'Radiuse' : Radiuse,
-        'Dlina_PAV' : Dlina_PAV,
-        'Plotnost' : Plotnost,
-        'H_max' : H_max,
-        'NamagnicEdiniciMassi' : NamagnicEdiniciMassi,
-        'Koncintraciya_obyomnaya' : Koncintraciya_obyomnaya,
-        'GraniciVselennoy' : GraniciVselennoy
+        'CisloChastic' : m.CisloChastic,
+        'Vyazkost' : m.Vyazkost,
+        'Time' : m.Time,
+        'Temperature' : m.Temperature,
+        'Radiuse' : m.Radiuse,
+        'Dlina_PAV' : m.Dlina_PAV,
+        'Plotnost' : m.Plotnost,
+        'H_max' : m.H_max,
+        'NamagnicEdiniciMassi' : m.NamagnicEdiniciMassi,
+        'Koncintraciya_obyomnaya' : m.Koncintraciya_obyomnaya,
+        'GraniciVselennoy' : m.GraniciVselennoy
     },
     'Varibles' : {
-        'KolvoIteraciy' : KolvoIteraciy,
+        'KolvoIteraciy' : m.KolvoIteraciy,
         'N' : 0,
         'H' : [],
         'Chasichki' : [],
@@ -92,21 +92,6 @@ scince_data = {
     }
 }
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Struktura massiva chastic:
-RadVek = 0  # ::: RadiuseVecrtor chastici v prostranstve
-NaprUgl = 1  # ::: Napravlyayushie kosinusi
-
-VecSkor = 2  # ::: Vektor skorosti
-VekVrash = 3  # ::: Vektor uglovjy skorosti
-
-VekSil = 4  # ::: Vektor Sili
-VekMomentov = 5  # ::: Vector momentaSil
-
-ParamCastic = 6  # ::: Parametri chastic: Radius, Massa, ...
-R_Chastici = 0  # ::: Radiuse chastici
-M_Chastici = 1  # ::: Massa odnoy chastici
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #%%
 # =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>=
 # new_experiment = True
