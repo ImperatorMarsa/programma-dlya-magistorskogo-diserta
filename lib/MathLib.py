@@ -54,22 +54,6 @@ GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
 
 #@markdown ---
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Struktura massiva chastic:
-RadVek = 0  # ::: RadiuseVecrtor chastici v prostranstve
-NaprUgl = 1  # ::: Napravlyayushie kosinusi
-
-VecSkor = 2  # ::: Vektor skorosti
-VekVrash = 3  # ::: Vektor uglovjy skorosti
-
-VekSil = 4  # ::: Vektor Sili
-VekMomentov = 5  # ::: Vector momentaSil
-
-ParamCastic = 6  # ::: Parametri chastic: Radius, Massa, ...
-R_Chastici = 0  # ::: Radiuse chastici
-M_Chastici = 1  # ::: Massa odnoy chastici
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 @jit(fastmath = True, nopython = True, parallel = True)
 def H(N):
     """Функция возврашающая вентор магнитной напряженности Н [A/м]
@@ -77,7 +61,11 @@ def H(N):
     Arguments:
         N {[integer]} -- Номер итерации
     """
-    return xp.array([Hx_amplitud * xp.cos(2 * xp.pi * Frequency * (N * delta_T) + Faza), Hy_amplitud, 0], dtype = xp.float64)
+    return xp.array([
+        Hx_amplitud * xp.cos(2 * xp.pi * Frequency * (N * delta_T) + Faza),
+        Hy_amplitud,
+        0,
+    ], dtype = xp.float64)
 
 
 @jit(fastmath = True, nopython = True, parallel = True)
@@ -90,11 +78,11 @@ def _VneshPole(N, moment):
         N {integer} -- Номер итерации
         moment {array[float64]} -- Массив векторов намагниченности частиц
     """
-    B = -H(N) * U0
+    B = -H(N) * U0 # здесь стоит мину, потомучто я ленивая жопка и мне влом переписывать векторное произведение :З
     return xp.array([
         B[1] * moment[2] - B[2] * moment[1],
         B[2] * moment[0] - B[0] * moment[2],
-        B[0] * moment[1] - B[1] * moment[0]
+        B[0] * moment[1] - B[1] * moment[0],
     ], dtype = xp.float64)
 
 VneshPole = np.vectorize(_VneshPole, otypes=[float], signature='(),(n)->(n)')
@@ -125,7 +113,7 @@ def _SteerOttalk(matrix, uglVek, radVek):
     if dist <= Rq2:
         return -distVek * dist * A * 3e-7 * M ** 2 / (Rq2 ** 4) * xp.exp(-B * (dist / Rq2 - 1))
     else:
-        return xp.array([0, 0, 0], dtype = xp.float64)
+        return xp.array([0, 0, 0,], dtype = xp.float64)
 
 SteerOttalk = np.vectorize(_SteerOttalk, otypes=[float], signature='(m),(l),(k)->(k)')
 
@@ -265,17 +253,6 @@ def MathKernel(mass, N):
                             mass[i] = PrimoyMoment(mass[i], mass[j], n, magN)
 
     return mass
-
-
-@jit(fastmath = True, nopython = True, parallel = True)
-def Cross(a, b):
-    return xp.array(
-        [
-            a[1] * b[2] - a[2] * b[1],
-            a[2] * b[0] - a[0] * b[2],
-            a[0] * b[1] - a[1] * b[0],
-        ]
-    )
 
 
 @jit(fastmath = True, nopython = True, parallel = True)
