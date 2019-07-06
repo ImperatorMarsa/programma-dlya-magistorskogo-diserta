@@ -21,7 +21,7 @@ KolvoIteraciy = 3 #@param {type: "integer"}
 Vyazkost = 2.15e-3 #@param {type: "number"}
 
 # sekund
-Time = 1e-10 #@param {type: "number"}
+delta_T = 1e-10 #@param {type: "number"}
 
 # 1.38e-23
 PostoyanayaBolcmana = 1.38e-23 
@@ -32,7 +32,10 @@ U0 = 4e-7 * xp.pi # Genri/метр
 # Метров
 Radiuse = 6.66e-9 #@param {type: "number"}
 
-H_max = 7.3e3 #@param {type: "number"}
+Hx_amplitud = 7.3e3 #@param {type: "number"}
+Frequency = 300 #@param {type: "number"}
+Faza = 0 #@param {type: "number"}
+Hy_amplitud = 7.3e3 #@param {type: "number"}
 
 Plotnost = 5000 # килограмм/метр^3
 
@@ -67,6 +70,32 @@ ParamCastic = 6  # ::: Parametri chastic: Radius, Massa, ...
 R_Chastici = 0  # ::: Radiuse chastici
 M_Chastici = 1  # ::: Massa odnoy chastici
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+@jit(fastmath = True, nopython = True, parallel = True)
+def H(N):
+    """Функция возврашающая вентор магнитной напряженности Н [A/м]
+    
+    Arguments:
+        N {[integer]} -- Номер итерации
+    """
+    return xp.array([Hx_amplitud * xp.cos(2 * xp.pi * Frequency * (N * delta_T) + Faza), Hy_amplitud, 0], dtype = xp.float64)
+
+
+# @jit(fastmath = True, nopython = True, parallel = True)
+def _VneshPole(N, moment):
+    """Функция расчёта cилы действующая на частицу со стороны внешнего поля
+    
+    Arguments:
+        N {integer} -- Номер итерации
+        moment {array[float64]} -- Массив векторов намагниченности частиц
+    """
+    B = H(N) * U0
+    return xp.array([
+        B[1] * moment[2] - B[2] * moment[1],
+        B[2] * moment[0] - B[0] * moment[2],
+        B[0] * moment[1] - B[1] * moment[0]
+    ], dtype = xp.float64)
+
+VneshPole = np.vectorize(_VneshPole, otypes=[float], signature='(),(n)->(n)')
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def PrimoySila(mI, mJ, n, magN):
@@ -99,13 +128,6 @@ def PrimoyMoment(mI, mJ, n, magN):
     )
     mI[VekMomentov] += Cross(mJ[NaprUgl], B_I)
 
-    return mI
-
-
-@jit(fastmath = True, nopython = True, parallel = True)
-def VneshPole(mI, N):
-    B = xp.array([1, 0, 0]) * H(N) * U0
-    mI[VekMomentov] += Cross(mI[NaprUgl], B)
     return mI
 
 
@@ -145,22 +167,22 @@ def Kinematika(C):
     C[VecSkor] = C[RadVek]
     C[RadVek] = (
         C[RadVek]
-        + C[VekSil] / (6.0 * xp.pi * C[ParamCastic][R_Chastici] * Vyazkost) * Time
+        + C[VekSil] / (6.0 * xp.pi * C[ParamCastic][R_Chastici] * Vyazkost) * delta_T
         + pom
     )
-    C[VecSkor] = (C[RadVek] - C[VecSkor]) / Time
+    C[VecSkor] = (C[RadVek] - C[VecSkor]) / delta_T
 
     pom = StahostSmeshUglovoe(C[ParamCastic][R_Chastici])
     C[VekVrash] = C[NaprUgl]
     DeltaAlfa = (
         C[VekMomentov]
         / (8.0 * xp.pi * C[ParamCastic][R_Chastici] ** 3 * Vyazkost)
-        * Time
+        * delta_T
         + pom
     )  # xp.linalg.norm(DeltaAlfa) #
     buf = math.sqrt(DeltaAlfa[0] ** 2 + DeltaAlfa[1] ** 2 + DeltaAlfa[2] ** 2)
     C[NaprUgl] = RotatinVec(C[NaprUgl], DeltaAlfa, buf)
-    C[VekVrash] = (C[NaprUgl] - C[VekVrash]) / Time
+    C[VekVrash] = (C[NaprUgl] - C[VekVrash]) / delta_T
 
     C = PorvrkaGrani(C)
     C[VekSil] = xp.zeros(3)
@@ -193,21 +215,14 @@ def PorvrkaGrani(mass):
 def StahostSmeshLineynoe(Radiuse):
     difuz = kT / (6.0 * xp.pi * Radiuse * Vyazkost)
 
-    return RandNormVec() * ((2 * difuz * Time) ** 0.5 * gauss(0, 1))
+    return RandNormVec() * ((2 * difuz * delta_T) ** 0.5 * gauss(0, 1))
 
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def StahostSmeshUglovoe(Radiuse):
     difuz = kT / (8.0 * xp.pi * Radiuse ** 3 * Vyazkost)
 
-    return RandNormVec() * ((2 * difuz * Time) ** 0.5 * gauss(0, 1))
-
-
-@jit(fastmath = True, nopython = True, parallel = True)
-def H(N):
-    # a = N+1
-    # Ампер/метр
-    return H_max * xp.cos(xp.pi / 2500 * N)
+    return RandNormVec() * ((2 * difuz * delta_T) ** 0.5 * gauss(0, 1))
 
 
 @jit(fastmath = True, nopython = True, parallel = True)
