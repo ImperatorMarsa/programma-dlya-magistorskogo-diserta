@@ -80,15 +80,15 @@ def H(N):
     return xp.array([Hx_amplitud * xp.cos(2 * xp.pi * Frequency * (N * delta_T) + Faza), Hy_amplitud, 0], dtype = xp.float64)
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
+@jit(fastmath = True, nopython = True, parallel = True)
 def _VneshPole(N, moment):
-    """Функция расчёта cилы действующая на частицу со стороны внешнего поля
+    """Функция расчёта силы действующая на частицу со стороны внешнего поля
     
     Arguments:
         N {integer} -- Номер итерации
         moment {array[float64]} -- Массив векторов намагниченности частиц
     """
-    B = H(N) * U0
+    B = -H(N) * U0
     return xp.array([
         B[1] * moment[2] - B[2] * moment[1],
         B[2] * moment[0] - B[0] * moment[2],
