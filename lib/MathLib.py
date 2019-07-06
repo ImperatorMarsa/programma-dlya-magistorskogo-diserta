@@ -84,6 +84,8 @@ def H(N):
 def _VneshPole(N, moment):
     """Функция расчёта силы действующая на частицу со стороны внешнего поля
     
+    Возвращает мвссив моментов сил
+    
     Arguments:
         N {integer} -- Номер итерации
         moment {array[float64]} -- Массив векторов намагниченности частиц
@@ -101,6 +103,15 @@ VneshPole = np.vectorize(_VneshPole, otypes=[float], signature='(),(n)->(n)')
 # https://www.desmos.com/calculator/ddxmffkqrj
 @jit(fastmath = True, nopython = True, parallel = True)
 def _SteerOttalk(matrix, uglVek, radVek):
+    """Функция расчёта стерического отталкивания частиц МЖ
+
+    Возвращает массив сил отталкивания
+    
+    Arguments:
+        matrix {array[float64]} -- Массив координат частиц в котором собственные координаты унесены на бесконечность
+        uglVek {array[float64]} -- Вектор намагниченности
+        radVek {array[float64]} -- Координаты частицы с которой производится взаимодействие
+    """
     # Kakieto koefficienti #
     A = 31.3
     B = 73.0
