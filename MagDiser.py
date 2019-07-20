@@ -53,6 +53,7 @@ Hy_amplitud = 7.3e3 #@param {type: "number"}
 
 Plotnost = 5000 # килограмм/метр^3
 
+Obyom_ = 4 / 3 * xp.pi * (Radiuse + Dlina_PAV) ** 3  # Метров^3
 Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
 
 Massa = Obyom * Plotnost  # килограмм
@@ -61,7 +62,7 @@ NamagnicEdiniciObyoma = 4.78e5 #@param {type: "number"}
 
 # Метров
 Koncintraciya_obyomnaya = 0.10 #@param {type: "number"}
-GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
+GraniciVselennoy = math.pow(Obyom_ * CisloChastic / Koncintraciya_obyomnaya, 1/3)
 
 m.kT = kT
 m.U0 = U0
@@ -85,13 +86,12 @@ m.NamagnicEdiniciObyoma = NamagnicEdiniciObyoma
 m.Koncintraciya_obyomnaya = Koncintraciya_obyomnaya
 #@markdown ---
 
-MatrixKoordinat = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
-MatrixNamagnicennosti = xp.zeros(CisloChastic * 3, (CisloChastic, 3)) * m.MagMom(Radiuse)
-MatrixSkorosti = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
-MatrixUglSkorosti = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
-MatrixSili = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
-MatrixMoenta = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
-VektorRadiusov = xp.array([Radiuse])
+MatrixKoordinat = xp.zeros((CisloChastic, 3))
+MatrixNamagnicennosti = xp.zeros((CisloChastic, 3))
+MatrixSkorosti = xp.zeros((CisloChastic, 3))
+MatrixUglSkorosti = xp.zeros((CisloChastic, 3))
+MatrixSili = xp.zeros((CisloChastic, 3))
+MatrixMoenta = xp.zeros((CisloChastic, 3))
 
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 pickelPath = "C:\\Users\\sitnikov\\Documents\\Python Scripts\\data_.pickle"
@@ -118,7 +118,6 @@ scince_data = {
         'MatrixMoenta' : MatrixMoenta,
         'KolvoIteraciy' : KolvoIteraciy,
         'MatrixSkorosti' : MatrixSkorosti,
-        'VektorRadiusov' : VektorRadiusov,
         'MatrixKoordinat' : MatrixKoordinat,
         'MatrixUglSkorosti' : MatrixUglSkorosti,
         'MatrixNamagnicennosti' : MatrixNamagnicennosti,
@@ -139,19 +138,29 @@ if os.path.exists(pickelPath):
 
 if new_experiment:
     print('Запускаем новый опыт')
-    Chasichki = m.createrChastic(CisloChastic)
-    scince_data['Varibles']['Chasichki'].append(Chasichki)
+    MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti = m.createrChastic(
+        MatrixKoordinat,
+        MatrixNamagnicennosti,
+        MatrixSkorosti,
+        MatrixUglSkorosti
+    )
+    scince_data['Varibles']['MatrixKoordinat'] = MatrixKoordinat
+    scince_data['Varibles']['MatrixNamagnicennosti'] = MatrixNamagnicennosti
 else:
     print('Продолжаем старый опыт')
-    Chasichki = scince_data['Varibles']['Chasichki']
     KolvoIteraciy = scince_data['Varibles']['KolvoIteraciy']
+    MatrixKoordinat = scince_data['Varibles']['MatrixKoordinat']
+    MatrixNamagnicennosti = scince_data['Varibles']['MatrixNamagnicennosti']
 
 start_time = time.time()
 Iteraciy = KolvoIteraciy - scince_data['Varibles']['N']
 if Iteraciy > 0:
     print('\n Начало опыта')
-    scince_data['Varibles']['Chasichki'].append(Chasichki)
-    scince_data['Varibles']['Result'].append(m.Culculete(Chasichki))
+    scince_data['Varibles']['MatrixKoordinat'] = MatrixKoordinat
+    scince_data['Varibles']['MatrixNamagnicennosti'] = MatrixNamagnicennosti
+    scince_data['Varibles']['MatrixSkorosti'] = MatrixSkorosti
+    scince_data['Varibles']['MatrixUglSkorosti'] = MatrixUglSkorosti
+    scince_data['Varibles']['Result'].append(m.Culculete(MatrixNamagnicennosti))
     scince_data['Varibles']['H'].append(m.H(0) * U0)
     TABLE_DATA = (
         ('Название параметра', 'Значеие', 'Единицы измерения'),
@@ -178,10 +187,29 @@ if Iteraciy > 0:
         scince_data['Varibles']['N'] += 1
         N = scince_data['Varibles']['N']
 
-        Chasichki = m.MathKernel(Chasichki, N)
-        Chasichki = m.GeneralLoop(Chasichki)
-        scince_data['Varibles']['Chasichki'].append(Chasichki)
-        scince_data['Varibles']['Result'].append(m.Culculete(Chasichki))
+        MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.MathKernel(
+            MatrixKoordinat,
+            MatrixNamagnicennosti,
+            MatrixSkorosti,
+            MatrixUglSkorosti,
+            MatrixSili,
+            MatrixMoenta,
+            N
+        )
+        MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.GeneralLoop(
+            MatrixKoordinat,
+            MatrixNamagnicennosti,
+            MatrixSkorosti,
+            MatrixUglSkorosti,
+            MatrixSili,
+            MatrixMoenta,
+            N
+        )
+        scince_data['Varibles']['MatrixKoordinat'] = MatrixKoordinat
+        scince_data['Varibles']['MatrixNamagnicennosti'] = MatrixNamagnicennosti
+        scince_data['Varibles']['MatrixSkorosti'] = MatrixSkorosti
+        scince_data['Varibles']['MatrixUglSkorosti'] = MatrixUglSkorosti
+        scince_data['Varibles']['Result'].append(m.Culculete(MatrixNamagnicennosti))
         scince_data['Varibles']['H'].append(m.H(N) * U0)
         if time.time() - timeInterput > 600:
             print(
