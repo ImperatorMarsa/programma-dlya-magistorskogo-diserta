@@ -30,139 +30,154 @@ xp = np
 #@markdown Настройка переменных системы
 #@markdown ---
 
-m.CisloChastic = 234 #@param {type: "integer"}
-m.KolvoIteraciy = 3 #@param {type: "integer"}
+CisloChastic = 234 #@param {type: "integer"}
+KolvoIteraciy = 3 #@param {type: "integer"}
 
 # Paskal*sekunda
-m.Vyazkost = 2.15e-3 #@param {type: "number"}
+Vyazkost = 2.15e-3 #@param {type: "number"}
 
 # sekund
-m.Time = 1e-10 #@param {type: "number"}
+delta_T = 1e-10 #@param {type: "number"}
 
 # 1.38e-23
-m.PostoyanayaBolcmana = 1.38e-23 
-m.Temperature = 273.16 #@param {type: "number"}
-m.kT = Temperature * PostoyanayaBolcmana
+PostoyanayaBolcmana = 1.38e-23 
+Temperature = 273.16 #@param {type: "number"}
+kT = Temperature * PostoyanayaBolcmana
 
-m.U0 = 4e-7 * xp.pi # Genri/метр
+U0 = 4e-7 * xp.pi # Genri/метр
 # Метров
-m.Radiuse = 6.66e-9 #@param {type: "number"}
+Radiuse = 6.66e-9 #@param {type: "number"}
+Dlina_PAV = 2e-9 #@param {type: "number"}
 
-m.H_max = 7.3e3 #@param {type: "number"}
+Hx_amplitud = 7.3e3 #@param {type: "number"}
+Frequency = 300 #@param {type: "number"}
+Faza = 0 #@param {type: "number"}
+Hy_amplitud = 7.3e3 #@param {type: "number"}
 
-m.Plotnost = 5000 # килограмм/метр^3
+Plotnost = 5000 # килограмм/метр^3
 
-m.Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
+Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
 
-m.Massa = Obyom * Plotnost  # килограмм
+Massa = Obyom * Plotnost  # килограмм
 
-m.Dlina_PAV = 2e-9 #@param {type: "number"}
-
-m.NamagnicEdiniciMassi = 4.78e5 #@param {type: "number"}
-m.MagMom = NamagnicEdiniciMassi * Obyom # Ампер*метр^2((namagnichenost' nasisheniya=4.78*10^5 Ампер/метр))
+NamagnicEdiniciObyoma = 4.78e5 #@param {type: "number"}
 
 # Метров
-m.Koncintraciya_obyomnaya = 0.10 #@param {type: "number"}
-m.GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
+Koncintraciya_obyomnaya = 0.10 #@param {type: "number"}
+GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
 
 #@markdown ---
-# <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 
+MatrixKoordinat = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
+MatrixNamagnicennosti = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3)) * m.MagMom(m.Radiuse)
+MatrixSkorosti = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
+MatrixUglSkorosti = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
+MatrixSili = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
+MatrixMoenta = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
+VektorRadiusov = xp.array([m.Radiuse])
+# <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 pickelPath = "C:\\Users\\sitnikov\\Documents\\Python Scripts\\data_.pickle"
 scince_data = {
     'Const' : {
-        'CisloChastic' : m.CisloChastic,
-        'Vyazkost' : m.Vyazkost,
-        'Time' : m.Time,
-        'Temperature' : m.Temperature,
+        'Faza' : m.Faza,
+        'delta_T' : m.delta_T,
         'Radiuse' : m.Radiuse,
-        'Dlina_PAV' : m.Dlina_PAV,
         'Plotnost' : m.Plotnost,
-        'H_max' : m.H_max,
+        'Vyazkost' : m.Vyazkost,
+        'Dlina_PAV' : m.Dlina_PAV,
+        'Frequency' : m.Frequency,
+        'Hx_amplitud' : m.Hx_amplitud,
+        'Hy_amplitud' : m.Hy_amplitud,
+        'Temperature' : m.Temperature,
+        'CisloChastic' : m.CisloChastic,
         'NamagnicEdiniciMassi' : m.NamagnicEdiniciMassi,
         'Koncintraciya_obyomnaya' : m.Koncintraciya_obyomnaya,
-        'GraniciVselennoy' : m.GraniciVselennoy
     },
     'Varibles' : {
-        'KolvoIteraciy' : m.KolvoIteraciy,
         'N' : 0,
         'H' : [],
-        'Chasichki' : [],
-        'Result' : []
+        'MatrixSili' : MatrixSili,
+        'MatrixMoenta' : MatrixMoenta,
+        'KolvoIteraciy' : KolvoIteraciy,
+        'MatrixSkorosti' : MatrixSkorosti,
+        'VektorRadiusov' : VektorRadiusov,
+        'MatrixKoordinat' : MatrixKoordinat,
+        'MatrixUglSkorosti' : MatrixUglSkorosti,
+        'MatrixNamagnicennosti' : MatrixNamagnicennosti,
     }
 }
 
 #%%
 # =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>=
-# new_experiment = True
-# if os.path.exists(pickelPath):
-#     f = open(pickelPath, "rb")
-#     buffer = pickle.load(f)
-#     f.close()
-#     if buffer['Const'] == scince_data['Const']:
-#         new_experiment = False
-#         for k, v in buffer['Varibles'].items():
-#             scince_data['Varibles'][k] = v
+new_experiment = True
+if os.path.exists(pickelPath):
+    f = open(pickelPath, "rb")
+    buffer = pickle.load(f)
+    f.close()
+    if buffer['Const'] == scince_data['Const']:
+        new_experiment = False
+        for k, v in buffer['Varibles'].items():
+            scince_data['Varibles'][k] = v
 
-# if new_experiment:
-#     print('Запускаем новый опыт')
-#     Chasichki = createrChastic(CisloChastic)
-#     scince_data['Varibles']['Chasichki'].append(Chasichki)
-# else:
-#     print('Продолжаем старый опыт')
-#     Chasichki = scince_data['Varibles']['Chasichki']
-#     KolvoIteraciy = scince_data['Varibles']['KolvoIteraciy']
+if new_experiment:
+    print('Запускаем новый опыт')
+    Chasichki = createrChastic(CisloChastic)
+    scince_data['Varibles']['Chasichki'].append(Chasichki)
+else:
+    print('Продолжаем старый опыт')
+    Chasichki = scince_data['Varibles']['Chasichki']
+    KolvoIteraciy = scince_data['Varibles']['KolvoIteraciy']
 
-# start_time = time.time()
-# Iteraciy = KolvoIteraciy - scince_data['Varibles']['N']
-# if Iteraciy > 0:
-#     print('\n Начало опыта')
-#     scince_data['Varibles']['Chasichki'].append(Chasichki)
-#     scince_data['Varibles']['Result'].append(Culculete(Chasichki))
-#     scince_data['Varibles']['H'].append(H(0) * U0)
-#     TABLE_DATA = (
-#         ('Название параметра', 'Значеие', 'Единицы измерения'),
-#         ('Число частиц', CisloChastic, 'шт.'),
-#         ('Вязкость', Vyazkost, 'Па * с'),
-#         ('Шаг времени', Time, 'с'),
-#         ('Температура', Temperature, 'К'),
-#         ('Радиус', Radiuse, 'м'),
-#         ('Длина молекул ПАВ', Dlina_PAV, 'м'),
-#         ('Плотность', Plotnost, 'кг / м^3'),
-#         ('Максимум значения Н', H_max, 'А / м'),
-#         ('Намаг. ед. массы', NamagnicEdiniciMassi, 'А / (м * кг)'),
-#         ('Объёмная концентрация', Koncintraciya_obyomnaya, ''),
-#         ('Размеры ячейки', GraniciVselennoy, 'м'),
-#         ('Количество итераций', KolvoIteraciy, ''),
-#     )
-#     title = 'Параметры эксперимента'
-#     table_instance = DoubleTable(TABLE_DATA, title)
-#     print(table_instance.table, '\n')
+start_time = time.time()
+Iteraciy = KolvoIteraciy - scince_data['Varibles']['N']
+if Iteraciy > 0:
+    print('\n Начало опыта')
+    scince_data['Varibles']['Chasichki'].append(Chasichki)
+    scince_data['Varibles']['Result'].append(Culculete(Chasichki))
+    scince_data['Varibles']['H'].append(H(0) * U0)
+    TABLE_DATA = (
+        ('Название параметра', 'Значеие', 'Единицы измерения'),
+        ('Число частиц', CisloChastic, 'шт.'),
+        ('Вязкость', Vyazkost, 'Па * с'),
+        ('Шаг времени', Time, 'с'),
+        ('Температура', Temperature, 'К'),
+        ('Радиус', Radiuse, 'м'),
+        ('Длина молекул ПАВ', Dlina_PAV, 'м'),
+        ('Плотность', Plotnost, 'кг / м^3'),
+        ('Максимум значения Н', H_max, 'А / м'),
+        ('Намаг. ед. массы', NamagnicEdiniciMassi, 'А / (м * кг)'),
+        ('Объёмная концентрация', Koncintraciya_obyomnaya, ''),
+        ('Размеры ячейки', GraniciVselennoy, 'м'),
+        ('Количество итераций', KolvoIteraciy, ''),
+    )
+    title = 'Параметры эксперимента'
+    table_instance = DoubleTable(TABLE_DATA, title)
+    print(table_instance.table, '\n')
 
-#     timeInterput = -time.time()
-#     for N in range(1, Iteraciy):
-#         scince_data['Varibles']['N'] += 1
-#         N = scince_data['Varibles']['N']
+    timeInterput = -time.time()
+    for N in range(1, Iteraciy):
+        scince_data['Varibles']['N'] += 1
+        N = scince_data['Varibles']['N']
 
-#         Chasichki = MathKernel(Chasichki, N)
-#         Chasichki = GeneralLoop(Chasichki)
-#         scince_data['Varibles']['Chasichki'].append(Chasichki)
-#         scince_data['Varibles']['Result'].append(Culculete(Chasichki))
-#         scince_data['Varibles']['H'].append(H(N) * U0)
-#         if time.time() - timeInterput > 600:
-#             print(
-#                 "\rВыполнено %d из %d итераций \t\tМагнитное поле=%eH"
-#                 % (N + 1, KolvoIteraciy, H(N)),
-#                 end="",
-#             )
-#             f = open(pickelPath, 'wb+')
-#             pickle.dump(scince_data, f)
-#             f.close()
-#             timeInterput = time.time()
+        Chasichki = MathKernel(Chasichki, N)
+        Chasichki = GeneralLoop(Chasichki)
+        scince_data['Varibles']['Chasichki'].append(Chasichki)
+        scince_data['Varibles']['Result'].append(Culculete(Chasichki))
+        scince_data['Varibles']['H'].append(H(N) * U0)
+        if time.time() - timeInterput > 600:
+            print(
+                "\rВыполнено %d из %d итераций \t\tМагнитное поле=%eH"
+                % (N + 1, KolvoIteraciy, H(N)),
+                end="",
+            )
+            f = open(pickelPath, 'wb+')
+            pickle.dump(scince_data, f)
+            f.close()
+            timeInterput = time.time()
 
-# f = open(pickelPath, 'wb+')
-# pickle.dump(scince_data, f)
-# f.close()
+f = open(pickelPath, 'wb+')
+pickle.dump(scince_data, f)
+f.close()
 
-# print("\nВремя выполнения составило {}".format(time.time() - start_time))
+print("\nВремя выполнения составило {}".format(time.time() - start_time))
 # =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>= =<< >>=

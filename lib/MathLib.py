@@ -9,6 +9,16 @@ from terminaltables import DoubleTable
 # import cupy as cp
 
 xp = np
+
+def MagMom(rad):
+    """Функция возвращающая намагниченность частици заданного радиуса
+    
+    Arguments:
+        rad {float} -- Радиус частицы
+    """
+    Obyom = 4 / 3 * xp.pi * rad ** 3
+    return NamagnicEdiniciObyoma * Obyom
+
 # <+>!=<+>!=<+>!=___Fundamental'nie Poctoyannie___0<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 #@title Настройка
 #@markdown Настройка переменных системы
@@ -44,9 +54,7 @@ Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
 
 Massa = Obyom * Plotnost  # килограмм
 
-
-NamagnicEdiniciMassi = 4.78e5 #@param {type: "number"}
-MagMom = NamagnicEdiniciMassi * Obyom # Ампер*метр^2((namagnichenost' nasisheniya=4.78*10^5 Ампер/метр))
+NamagnicEdiniciObyoma = 4.78e5 #@param {type: "number"}
 
 # Метров
 Koncintraciya_obyomnaya = 0.10 #@param {type: "number"}
@@ -56,7 +64,7 @@ GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 @jit(fastmath = True, nopython = True, parallel = True)
 def H(N):
-    """Функция возврашающая вентор магнитной напряженности Н [A/м]
+    """Функция возвращающая вентор магнитной напряженности Н [A/м]
     
     Arguments:
         N {[integer]} -- Номер итерации
@@ -291,3 +299,45 @@ def RotatinVec(vec, axis, ugol):
     p1 = q4 * vec[0] + q5 * vec[1] + q6 * vec[2]
     p2 = q7 * vec[0] + q8 * vec[1] + q9 * vec[2]
     return xp.array([p0, p1, p2])
+
+def createrChastic(CisloChastic):
+    pom = [[]]
+    pom[-1].append(2 * GraniciVselennoy * xp.random.rand(3) - GraniciVselennoy)
+    pom[-1].append(RandNormVec() * MagMom)
+
+    pom[-1].append([0, 0, 0])
+    pom[-1].append([0, 0, 0])
+
+    pom[-1].append([0, 0, 0])
+    pom[-1].append([0, 0, 0])
+
+    pom[-1].append([Radiuse, Massa, 0])
+    for i in range(1, CisloChastic):
+        print(
+            "\rСоздано %d из %d частиц"
+            % (len(pom), CisloChastic),
+            end="",
+        )
+        koord = 2 * GraniciVselennoy * xp.random.rand(3) - GraniciVselennoy
+        new_koord = True
+        while new_koord:
+            for x in pom:
+                if xp.absolute(xp.sqrt(xp.sum(xp.square(x[0]))) - xp.sqrt(xp.sum(xp.square(koord)))) > 2 * (Radiuse + Dlina_PAV):
+                    new_koord = False
+                else:
+                    new_koord = True
+                    koord = 2 * GraniciVselennoy * xp.random.rand(3) - GraniciVselennoy
+        
+        pom.append([])            
+        pom[-1].append(koord)
+        pom[-1].append(RandNormVec() * MagMom)
+
+        pom[-1].append([0, 0, 0])
+        pom[-1].append([0, 0, 0])
+
+        pom[-1].append([0, 0, 0])
+        pom[-1].append([0, 0, 0])
+
+        pom[-1].append([Radiuse, Massa, 0])
+
+    return xp.array(pom)
