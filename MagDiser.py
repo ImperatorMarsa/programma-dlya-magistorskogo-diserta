@@ -13,15 +13,12 @@ import time
 import pickle
 import os.path
 import numpy as np
+import MathLib as m
 from numba import jit
 from random import random, gauss
 from terminaltables import DoubleTable
 
 # import cupy as cp
-
-import sys
-sys.path.insert(0, './lib')
-import MathLib as m
 
 xp = np
 
@@ -66,15 +63,36 @@ NamagnicEdiniciObyoma = 4.78e5 #@param {type: "number"}
 Koncintraciya_obyomnaya = 0.10 #@param {type: "number"}
 GraniciVselennoy = math.pow(Obyom * CisloChastic / Koncintraciya_obyomnaya, 1/3)
 
+m.kT = kT
+m.U0 = U0
+m.Faza = Faza
+m.Obyom = Obyom
+m.Massa = Massa
+m.Radiuse = Radiuse
+m.delta_T = delta_T
+m.Vyazkost = Vyazkost
+m.Plotnost = Plotnost
+m.Frequency = Frequency
+m.Dlina_PAV = Dlina_PAV
+m.Temperature = Temperature
+m.Hx_amplitud = Hx_amplitud
+m.Hy_amplitud = Hy_amplitud
+m.CisloChastic = CisloChastic
+m.KolvoIteraciy = KolvoIteraciy
+m.GraniciVselennoy = GraniciVselennoy
+m.PostoyanayaBolcmana = PostoyanayaBolcmana
+m.NamagnicEdiniciObyoma = NamagnicEdiniciObyoma
+m.Koncintraciya_obyomnaya = Koncintraciya_obyomnaya
 #@markdown ---
 
-MatrixKoordinat = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
-MatrixNamagnicennosti = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3)) * m.MagMom(m.Radiuse)
-MatrixSkorosti = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
-MatrixUglSkorosti = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
-MatrixSili = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
-MatrixMoenta = xp.zeros(m.CisloChastic * 3, (CisloChastic, 3))
-VektorRadiusov = xp.array([m.Radiuse])
+MatrixKoordinat = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
+MatrixNamagnicennosti = xp.zeros(CisloChastic * 3, (CisloChastic, 3)) * m.MagMom(Radiuse)
+MatrixSkorosti = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
+MatrixUglSkorosti = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
+MatrixSili = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
+MatrixMoenta = xp.zeros(CisloChastic * 3, (CisloChastic, 3))
+VektorRadiusov = xp.array([Radiuse])
+
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
 pickelPath = "C:\\Users\\sitnikov\\Documents\\Python Scripts\\data_.pickle"
 scince_data = {
@@ -90,7 +108,7 @@ scince_data = {
         'Hy_amplitud' : m.Hy_amplitud,
         'Temperature' : m.Temperature,
         'CisloChastic' : m.CisloChastic,
-        'NamagnicEdiniciMassi' : m.NamagnicEdiniciMassi,
+        'NamagnicEdiniciObyoma' : m.NamagnicEdiniciObyoma,
         'Koncintraciya_obyomnaya' : m.Koncintraciya_obyomnaya,
     },
     'Varibles' : {
@@ -121,7 +139,7 @@ if os.path.exists(pickelPath):
 
 if new_experiment:
     print('Запускаем новый опыт')
-    Chasichki = createrChastic(CisloChastic)
+    Chasichki = m.createrChastic(CisloChastic)
     scince_data['Varibles']['Chasichki'].append(Chasichki)
 else:
     print('Продолжаем старый опыт')
@@ -133,19 +151,20 @@ Iteraciy = KolvoIteraciy - scince_data['Varibles']['N']
 if Iteraciy > 0:
     print('\n Начало опыта')
     scince_data['Varibles']['Chasichki'].append(Chasichki)
-    scince_data['Varibles']['Result'].append(Culculete(Chasichki))
-    scince_data['Varibles']['H'].append(H(0) * U0)
+    scince_data['Varibles']['Result'].append(m.Culculete(Chasichki))
+    scince_data['Varibles']['H'].append(m.H(0) * U0)
     TABLE_DATA = (
         ('Название параметра', 'Значеие', 'Единицы измерения'),
         ('Число частиц', CisloChastic, 'шт.'),
         ('Вязкость', Vyazkost, 'Па * с'),
-        ('Шаг времени', Time, 'с'),
+        ('Шаг времени', delta_T, 'с'),
         ('Температура', Temperature, 'К'),
         ('Радиус', Radiuse, 'м'),
         ('Длина молекул ПАВ', Dlina_PAV, 'м'),
         ('Плотность', Plotnost, 'кг / м^3'),
-        ('Максимум значения Н', H_max, 'А / м'),
-        ('Намаг. ед. массы', NamagnicEdiniciMassi, 'А / (м * кг)'),
+        ('Максимум значения Н, по оси Х', Hx_amplitud, 'А / м'),
+        ('Максимум значения Н, по оси Y', Hy_amplitud, 'А / м'),
+        ('Намаг. ед. массы', NamagnicEdiniciObyoma, 'А / (м * кг)'),
         ('Объёмная концентрация', Koncintraciya_obyomnaya, ''),
         ('Размеры ячейки', GraniciVselennoy, 'м'),
         ('Количество итераций', KolvoIteraciy, ''),
@@ -159,15 +178,15 @@ if Iteraciy > 0:
         scince_data['Varibles']['N'] += 1
         N = scince_data['Varibles']['N']
 
-        Chasichki = MathKernel(Chasichki, N)
-        Chasichki = GeneralLoop(Chasichki)
+        Chasichki = m.MathKernel(Chasichki, N)
+        Chasichki = m.GeneralLoop(Chasichki)
         scince_data['Varibles']['Chasichki'].append(Chasichki)
-        scince_data['Varibles']['Result'].append(Culculete(Chasichki))
-        scince_data['Varibles']['H'].append(H(N) * U0)
+        scince_data['Varibles']['Result'].append(m.Culculete(Chasichki))
+        scince_data['Varibles']['H'].append(m.H(N) * U0)
         if time.time() - timeInterput > 600:
             print(
                 "\rВыполнено %d из %d итераций \t\tМагнитное поле=%eH"
-                % (N + 1, KolvoIteraciy, H(N)),
+                % (N + 1, KolvoIteraciy, m.H(N)),
                 end="",
             )
             f = open(pickelPath, 'wb+')
