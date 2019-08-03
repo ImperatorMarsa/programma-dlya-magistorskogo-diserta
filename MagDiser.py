@@ -27,8 +27,8 @@ xp = np
 #@markdown Настройка переменных системы
 #@markdown ---
 
-CisloChastic = 234 #@param {type: "integer"}
-KolvoIteraciy = 3 #@param {type: "integer"}
+CisloChastic = 24 #@param {type: "integer"}
+KolvoIteraciy = 30000 #@param {type: "integer"}
 
 # Paskal*sekunda
 Vyazkost = 2.15e-3 #@param {type: "number"}
@@ -114,6 +114,7 @@ scince_data = {
     'Varibles' : {
         'N' : 0,
         'H' : [],
+        'Result' : [],
         'MatrixSili' : MatrixSili,
         'MatrixMoenta' : MatrixMoenta,
         'KolvoIteraciy' : KolvoIteraciy,
@@ -187,24 +188,24 @@ if Iteraciy > 0:
         scince_data['Varibles']['N'] += 1
         N = scince_data['Varibles']['N']
 
-        MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.MathKernel(
-            MatrixKoordinat,
-            MatrixNamagnicennosti,
-            MatrixSkorosti,
-            MatrixUglSkorosti,
-            MatrixSili,
-            MatrixMoenta,
-            N
-        )
-        MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.GeneralLoop(
-            MatrixKoordinat,
-            MatrixNamagnicennosti,
-            MatrixSkorosti,
-            MatrixUglSkorosti,
-            MatrixSili,
-            MatrixMoenta,
-            N
-        )
+        # MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.MathKernel(
+        #     MatrixKoordinat,
+        #     MatrixNamagnicennosti,
+        #     MatrixSkorosti,
+        #     MatrixUglSkorosti,
+        #     MatrixSili,
+        #     MatrixMoenta,
+        #     N
+        # )
+        # MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.GeneralLoop(
+        #     MatrixKoordinat,
+        #     MatrixNamagnicennosti,
+        #     MatrixSkorosti,
+        #     MatrixUglSkorosti,
+        #     MatrixSili,
+        #     MatrixMoenta,
+        #     N
+        # )
         scince_data['Varibles']['MatrixKoordinat'] = MatrixKoordinat
         scince_data['Varibles']['MatrixNamagnicennosti'] = MatrixNamagnicennosti
         scince_data['Varibles']['MatrixSkorosti'] = MatrixSkorosti
@@ -212,9 +213,10 @@ if Iteraciy > 0:
         scince_data['Varibles']['Result'].append(m.Culculete(MatrixNamagnicennosti))
         scince_data['Varibles']['H'].append(m.H(N) * U0)
         if time.time() - timeInterput > 600:
+            H_ =  m.H(N)
             print(
-                "\rВыполнено %d из %d итераций \t\tМагнитное поле=%eH"
-                % (N + 1, KolvoIteraciy, m.H(N)),
+                "\rВыполнено %d из %d итераций \t\tМагнитное поле=%eHx %eHy %eHz"
+                % (N + 1, KolvoIteraciy, H_[0], H_[1], H_[2]),
                 end="",
             )
             f = open(pickelPath, 'wb+')
