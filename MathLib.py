@@ -16,7 +16,7 @@ def MagMom(rad):
     Arguments:
         rad {float} -- Радиус частицы
     """
-    Obyom = 4 / 3 * xp.pi * rad ** 3
+    Obyom = 4 / 3 * xp.pi * rad**3
     return NamagnicEdiniciObyoma * Obyom
 
 # <+>!=<+>!=<+>!=___Fundamental'nie Poctoyannie___0<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
@@ -50,8 +50,8 @@ Hy_amplitud = 7.3e3 #@param {type: "number"}
 
 Plotnost = 5000 # килограмм/метр^3
 
-Obyom_ = 4 / 3 * xp.pi * (Radiuse + Dlina_PAV) ** 3  # Метров^3
-Obyom = 4 / 3 * xp.pi * Radiuse ** 3  # Метров^3
+Obyom_ = 4 / 3 * xp.pi * (Radiuse + Dlina_PAV)**3  # Метров^3
+Obyom = 4 / 3 * xp.pi * Radiuse**3  # Метров^3
 
 Massa = Obyom * Plotnost  # килограмм
 
@@ -120,7 +120,7 @@ def _SteerOttalk(matrix, uglVek, radVek):
     distVek /= dist
     M = xp.sqrt(xp.sum(xp.square(xp.copy(uglVek))))
     if dist <= Rq2:
-        return -distVek * dist * A * 3e-7 * M ** 2 / (Rq2 ** 4) * xp.exp(-B * (dist / Rq2 - 1))
+        return -distVek * dist * A * 3e-7 * M**2 / (Rq2**4) * xp.exp(-B * (dist / Rq2 - 1))
     else:
         return xp.array([0, 0, 0,], dtype = xp.float64)
 
@@ -177,7 +177,7 @@ def createrChastic(koordi, namag, skor, uglSkor):
 
 @jit(fastmath = True, nopython = True, parallel = True)
 def Culculete(pom):
-    """Функция расчитываюшая среднее значение модуля для матрицы векторов
+    """Функция рассчитывающая среднее значение модуля для матрицы векторов
     
     Arguments:
         pom {array} -- Матрицы векторов
@@ -185,38 +185,65 @@ def Culculete(pom):
     return xp.sum(xp.sqrt(xp.sum(xp.square(xp.copy(pom)), axis = 1)))
 
 
+@jit(fastmath = True, nopython = True, parallel = True)
+def _Sila(n, matrix_K, matrix_U, uglVek, radVek):
+    distVek = xp.copy((matrix_K + n) - radVek)
+    dist = xp.sqrt(xp.sum(xp.square(distVek)))
+    distVek /= dist
+    return (
+        3 * U0 / (4 * xp.pi * dist**4)
+        * (
+            (uglVek @ distVek) * matrix_U
+            + (matrix_U @ distVek) * uglVek
+            + (uglVek @ matrix_U) * distVek
+            - 5 * (uglVek @ distVek) * (matrix_U @ distVek) * distVek
+        )
+    )
+
+Sila = np.vectorize(_Sila, otypes=[float], signature='(a),(s),(d),(m),(k)->(k)')
+
+
 # @jit(fastmath = True, nopython = True, parallel = True)
-# def PrimoySila(mI, mJ, n, magN):
-#     rIJ = (mI[RadVek] - mJ[RadVek]) + n
-#     magR = math.sqrt(rIJ[0] ** 2 + rIJ[1] ** 2 + rIJ[2] ** 2)
-#     mI[VekSil] += (
-#         3
-#         * U0
-#         / (4 * xp.pi * magR ** 5)
-#         * (
-#             Dot(mI[NaprUgl], rIJ) * mJ[NaprUgl]
-#             + Dot(mJ[NaprUgl], rIJ) * mI[NaprUgl]
-#             + Dot(mI[NaprUgl], mJ[NaprUgl]) * rIJ
-#             - 5 * Dot(mI[NaprUgl], rIJ) * Dot(mJ[NaprUgl], rIJ) * rIJ / magR ** 2
-#         )
-#     )
+def _Moment(n, uglVek, radVek, matrix_K, matrix_U):
+    distVek = xp.copy((matrix_K + n) - radVek)
+    dist = xp.sqrt(xp.sum(xp.square(distVek)))
+    distVek /= dist
+    B_mI = (
+        U0 / (4 * xp.pi)
+         * (3 * distVek * (uglVek @ distVek) - uglVek) / (dist**3)
+    )
+    return xp.cross(matrix_U, B_mI)
 
-#     return mI
+Moment = np.vectorize(_Moment, otypes=[float], signature='(a),(s),(d),(m),(k)->(k)')
 
 
 # @jit(fastmath = True, nopython = True, parallel = True)
-# def PrimoyMoment(mI, mJ, n, magN):
-#     rIJ = (mI[RadVek] - mJ[RadVek]) + n
-#     magR = math.sqrt(rIJ[0] ** 2 + rIJ[1] ** 2 + rIJ[2] ** 2)
+# def MathKernel(mass, N):
 
-#     B_I = (
-#         U0
-#         / (4 * xp.pi)
-#         * (Dot(mI[NaprUgl], rIJ) * 3 * rIJ / (magR) ** 5 - mI[NaprUgl] / (magR) ** 3)
-#     )
-#     mI[VekMomentov] += Cross(mJ[NaprUgl], B_I)
+#     for i in range(len(mass)):
+#         mass[i] = VneshPole(mass[i], N)
+#         for j in range(len(mass)):
+#             mass[i] = SteerOttalk(mass[i], mass[j])
+#             CisloProekciy = 3
+#             for X in range(-CisloProekciy, CisloProekciy + 1):
+#                 buffer1 = int(math.sqrt(CisloProekciy**2 - X**2))
+#                 for Y in range(-buffer1, buffer1 + 1):
+#                     buffer2 = int(math.sqrt(CisloProekciy**2 - X**2 - Y**2))
+#                     for Z in range(-buffer2, buffer2 + 1):
+#                         n = xp.array(
+#                             [
+#                                 X * GraniciVselennoy * 2,
+#                                 Y * GraniciVselennoy * 2,
+#                                 Z * GraniciVselennoy * 2,
+#                             ]
+#                         )
+#                         magN = math.sqrt(n[0]**2 + n[1]**2 + n[2]**2)
 
-#     return mI
+#                         if j != i:
+#                             mass[i] = PrimoySila(mass[i], mass[j], n, magN)
+#                             mass[i] = PrimoyMoment(mass[i], mass[j], n, magN)
+
+#     return mass
 
 
 # # https://www.desmos.com/calculator/bhjmf8p0pf
@@ -235,11 +262,11 @@ def Culculete(pom):
 #     C[VekVrash] = C[NaprUgl]
 #     DeltaAlfa = (
 #         C[VekMomentov]
-#         / (8.0 * xp.pi * C[ParamCastic][R_Chastici] ** 3 * Vyazkost)
+#         / (8.0 * xp.pi * C[ParamCastic][R_Chastici]**3 * Vyazkost)
 #         * delta_T
 #         + pom
 #     )  # xp.linalg.norm(DeltaAlfa) #
-#     buf = math.sqrt(DeltaAlfa[0] ** 2 + DeltaAlfa[1] ** 2 + DeltaAlfa[2] ** 2)
+#     buf = math.sqrt(DeltaAlfa[0]**2 + DeltaAlfa[1]**2 + DeltaAlfa[2]**2)
 #     C[NaprUgl] = RotatinVec(C[NaprUgl], DeltaAlfa, buf)
 #     C[VekVrash] = (C[NaprUgl] - C[VekVrash]) / delta_T
 
@@ -274,49 +301,20 @@ def Culculete(pom):
 # def StahostSmeshLineynoe(Radiuse):
 #     difuz = kT / (6.0 * xp.pi * Radiuse * Vyazkost)
 
-#     return RandNormVec() * ((2 * difuz * delta_T) ** 0.5 * gauss(0, 1))
+#     return RandNormVec() * ((2 * difuz * delta_T)**0.5 * gauss(0, 1))
 
 
 # @jit(fastmath = True, nopython = True, parallel = True)
 # def StahostSmeshUglovoe(Radiuse):
-#     difuz = kT / (8.0 * xp.pi * Radiuse ** 3 * Vyazkost)
+#     difuz = kT / (8.0 * xp.pi * Radiuse**3 * Vyazkost)
 
-#     return RandNormVec() * ((2 * difuz * delta_T) ** 0.5 * gauss(0, 1))
+#     return RandNormVec() * ((2 * difuz * delta_T)**0.5 * gauss(0, 1))
 
 
 # @jit(fastmath = True, nopython = True, parallel = True)
 # def GeneralLoop(mass):
 #     for x in range(len(mass)):
 #         mass[x] = Kinematika(mass[x])
-
-#     return mass
-
-
-# @jit(fastmath = True, nopython = True, parallel = True)
-# def MathKernel(mass, N):
-#     for i in range(len(mass)):
-#         mass[i] = VneshPole(mass[i], N)
-#         for j in range(len(mass)):
-#             mass[i] = SteerOttalk(mass[i], mass[j])
-
-#             PredelSumm = 3
-#             for X in range(-PredelSumm, PredelSumm + 1):
-#                 pom1 = int(math.sqrt(PredelSumm ** 2 - X ** 2))
-#                 for Y in range(-pom1, pom1 + 1):
-#                     pom2 = int(math.sqrt(PredelSumm ** 2 - X ** 2 - Y ** 2))
-#                     for Z in range(-pom2, pom2 + 1):
-#                         n = xp.array(
-#                             [
-#                                 X * GraniciVselennoy * 2,
-#                                 Y * GraniciVselennoy * 2,
-#                                 Z * GraniciVselennoy * 2,
-#                             ]
-#                         )
-#                         magN = math.sqrt(n[0] ** 2 + n[1] ** 2 + n[2] ** 2)
-
-#                         if j != i:
-#                             mass[i] = PrimoySila(mass[i], mass[j], n, magN)
-#                             mass[i] = PrimoyMoment(mass[i], mass[j], n, magN)
 
 #     return mass
 
@@ -331,7 +329,7 @@ def Culculete(pom):
 #     a1 = 1 - 2 * random()
 #     a2 = 1 - 2 * random()
 #     a3 = 1 - 2 * random()
-#     sq = math.sqrt(a1 ** 2 + a2 ** 2 + a3 ** 2)
+#     sq = math.sqrt(a1**2 + a2**2 + a3**2)
 
 #     return xp.array([a1 / sq, a2 / sq, a3 / sq])
 
@@ -343,7 +341,7 @@ def Culculete(pom):
 
 # @jit(fastmath = True, nopython = True, parallel = True)
 # def RotatinVec(vec, axis, ugol):
-#     nK = math.sqrt(axis[0] ** 2 + axis[2] ** 2 + axis[1] ** 2)
+#     nK = math.sqrt(axis[0]**2 + axis[2]**2 + axis[1]**2)
 #     axis[0], axis[1], axis[2] = axis[0] / nK, axis[1] / nK, axis[2] / nK
 #     a = math.cos(ugol / 2.0)
 #     sinKoef = math.sin(ugol / 2.0)
