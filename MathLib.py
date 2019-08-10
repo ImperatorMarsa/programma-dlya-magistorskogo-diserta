@@ -62,8 +62,23 @@ Koncintraciya_obyomnaya = 0.10 #@param {type: "number"}
 GraniciVselennoy = math.pow(Obyom_ * CisloChastic / Koncintraciya_obyomnaya, 1/3)
 
 #@markdown ---
+
+n = xp.array(
+    [
+        GraniciVselennoy * 2,
+        GraniciVselennoy * 2,
+        GraniciVselennoy * 2,
+    ]
+)
+infinity = xp.array(
+    [
+        10e10,
+        10e10,
+        10e10,
+    ]
+)
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
-@jit(fastmath = True, nopython = True, parallel = True)
+#@jit(fastmath = True, nopython = True, parallel = True)
 def H(N):
     """Функция возвращающая вентор магнитной напряженности Н [A/м]
     
@@ -77,7 +92,7 @@ def H(N):
     ], dtype = xp.float64)
 
 
-@jit(fastmath = True, nopython = True, parallel = True)
+#@jit(fastmath = True, parallel = True) # , nopython = True
 def _VneshPole(N, moment):
     """Функция расчёта силы действующая на частицу со стороны внешнего поля
     
@@ -87,18 +102,14 @@ def _VneshPole(N, moment):
         N {integer} -- Номер итерации
         moment {array[float64]} -- Массив векторов намагниченности частиц
     """
-    B = -H(N) * U0 # здесь стоит мину, потомучто я ленивая жопка и мне влом переписывать векторное произведение :З
-    return xp.array([
-        B[1] * moment[2] - B[2] * moment[1],
-        B[2] * moment[0] - B[0] * moment[2],
-        B[0] * moment[1] - B[1] * moment[0],
-    ], dtype = xp.float64)
+    B = H(N) * U0 # здесь стоит мину, потомучто я ленивая жопка и мне влом переписывать векторное произведение :З
+    return Cross(moment, B)
 
 VneshPole = np.vectorize(_VneshPole, otypes=[float], signature='(),(n)->(n)')
 
 
 # https://www.desmos.com/calculator/ddxmffkqrj
-@jit(fastmath = True, nopython = True, parallel = True)
+#@jit(fastmath = True, nopython = True, parallel = True)
 def _SteerOttalk(matrix, uglVek, radVek):
     """Функция расчёта стерического отталкивания частиц МЖ
 
@@ -175,7 +186,7 @@ def createrChastic(koordi, namag, skor, uglSkor):
     return koordi, namag, skor, uglSkor
 
 
-@jit(fastmath = True, nopython = True, parallel = True)
+#@jit(fastmath = True, nopython = True, parallel = True)
 def Culculete(pom):
     """Функция рассчитывающая среднее значение модуля для матрицы векторов
     
@@ -185,8 +196,17 @@ def Culculete(pom):
     return xp.sum(xp.sqrt(xp.sum(xp.square(xp.copy(pom)), axis = 1)))
 
 
-@jit(fastmath = True, nopython = True, parallel = True)
+#@jit(fastmath = True, nopython = True, parallel = True)
 def _Sila(n, matrix_K, matrix_U, uglVek, radVek):
+    """Функция расчёта силы взаимодействия двух маг диполей
+    
+    Arguments:
+        n {array} -- Вектор смещение. Используется для переноса системы частиц в соответствующем направлении
+        matrix_K {array} --Матрица координат частиц
+        matrix_U {array} -- Матрица векторов намагниченности частиц
+        uglVek {array} -- Вектор намагниченности данной частицы
+        radVek {array} -- Координаты данной частицы
+    """
     distVek = xp.copy((matrix_K + n) - radVek)
     dist = xp.sqrt(xp.sum(xp.square(distVek)))
     distVek /= dist
@@ -203,8 +223,17 @@ def _Sila(n, matrix_K, matrix_U, uglVek, radVek):
 Sila = np.vectorize(_Sila, otypes=[float], signature='(a),(s),(d),(m),(k)->(k)')
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
-def _Moment(n, uglVek, radVek, matrix_K, matrix_U):
+#@jit(fastmath = True, parallel = True) # , nopython = True
+def _Moment(n, matrix_K, matrix_U, uglVek, radVek):
+    """Функция расчёта силы взаимодействия двух маг диполей
+    
+    Arguments:
+        n {array} -- Вектор смещение. Используется для переноса системы частиц в соответствующем направлении
+        matrix_K {array} --Матрица координат частиц
+        matrix_U {array} -- Матрица векторов намагниченности частиц
+        uglVek {array} -- Вектор намагниченности данной частицы
+        radVek {array} -- Координаты данной частицы
+    """
     distVek = xp.copy((matrix_K + n) - radVek)
     dist = xp.sqrt(xp.sum(xp.square(distVek)))
     distVek /= dist
@@ -212,42 +241,47 @@ def _Moment(n, uglVek, radVek, matrix_K, matrix_U):
         U0 / (4 * xp.pi)
          * (3 * distVek * (uglVek @ distVek) - uglVek) / (dist**3)
     )
-    return xp.cross(matrix_U, B_mI)
+    return Cross(matrix_U, B_mI)
 
 Moment = np.vectorize(_Moment, otypes=[float], signature='(a),(s),(d),(m),(k)->(k)')
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
-# def MathKernel(mass, N):
+#@jit(fastmath = True, nopython = True, parallel = True)
+def _Cross(A, B):
+    return xp.array([
+        A[1] * B[2] - A[2] * B[1],
+        A[2] * B[0] - A[0] * B[2],
+        A[0] * B[1] - A[1] * B[0],
+    ], dtype = xp.float64)
 
-#     for i in range(len(mass)):
-#         mass[i] = VneshPole(mass[i], N)
-#         for j in range(len(mass)):
-#             mass[i] = SteerOttalk(mass[i], mass[j])
-#             CisloProekciy = 3
-#             for X in range(-CisloProekciy, CisloProekciy + 1):
-#                 buffer1 = int(math.sqrt(CisloProekciy**2 - X**2))
-#                 for Y in range(-buffer1, buffer1 + 1):
-#                     buffer2 = int(math.sqrt(CisloProekciy**2 - X**2 - Y**2))
-#                     for Z in range(-buffer2, buffer2 + 1):
-#                         n = xp.array(
-#                             [
-#                                 X * GraniciVselennoy * 2,
-#                                 Y * GraniciVselennoy * 2,
-#                                 Z * GraniciVselennoy * 2,
-#                             ]
-#                         )
-#                         magN = math.sqrt(n[0]**2 + n[1]**2 + n[2]**2)
+Cross = np.vectorize(_Cross, otypes=[float], signature='(m),(k)->(k)')
 
-#                         if j != i:
-#                             mass[i] = PrimoySila(mass[i], mass[j], n, magN)
-#                             mass[i] = PrimoyMoment(mass[i], mass[j], n, magN)
+#@jit(fastmath = True, parallel = True) # , nopython = True
+def MathKernel(MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta, N, CisloProekciy = 4):
+    MatrixMoenta += VneshPole(N, MatrixNamagnicennosti)
+    lenses = len(MatrixKoordinat)
+    for i in range(lenses):
+        onePartickle_r = xp.copy(MatrixKoordinat[i])
+        MatrixKoordinat[i] = xp.copy(infinity)
+        onePartickle_u = xp.copy(MatrixNamagnicennosti[i])
+        MatrixSili += SteerOttalk(MatrixKoordinat, onePartickle_u, onePartickle_r)
+        for X in range(-CisloProekciy, CisloProekciy + 1):
+            buffer1 = int(math.sqrt(CisloProekciy**2 - X**2))
+            for Y in range(-buffer1, buffer1 + 1):
+                buffer2 = int(math.sqrt(CisloProekciy**2 - X**2 - Y**2))
+                for Z in range(-buffer2, buffer2 + 1):
+                    n[0] = X * GraniciVselennoy * 2
+                    n[1] = Y * GraniciVselennoy * 2
+                    n[2] = Z * GraniciVselennoy * 2
+                    MatrixMoenta += Moment(n, MatrixKoordinat, MatrixNamagnicennosti, onePartickle_u, onePartickle_r)
+                    MatrixSili += Sila(n, MatrixKoordinat, MatrixNamagnicennosti, onePartickle_u, onePartickle_r)
 
-#     return mass
+        MatrixKoordinat[i] = xp.copy(onePartickle_r)
+    return MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta
 
 
 # # https://www.desmos.com/calculator/bhjmf8p0pf
-# @jit(fastmath = True, nopython = True, parallel = True)
+## @jit(fastmath = True, nopython = True, parallel = True)
 # def Kinematika(C):
 #     pom = StahostSmeshLineynoe(C[ParamCastic][R_Chastici])
 #     C[VecSkor] = C[RadVek]
@@ -277,7 +311,7 @@ Moment = np.vectorize(_Moment, otypes=[float], signature='(a),(s),(d),(m),(k)->(
 #     return C
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
+## @jit(fastmath = True, nopython = True, parallel = True)
 # def PorvrkaGrani(mass):
 #     if mass[0][0] > GraniciVselennoy:
 #         mass[0] = xp.array([mass[0][0] - 2 * GraniciVselennoy, mass[0][1], mass[0][2]])
@@ -297,21 +331,21 @@ Moment = np.vectorize(_Moment, otypes=[float], signature='(a),(s),(d),(m),(k)->(
 #     return mass
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
+## @jit(fastmath = True, nopython = True, parallel = True)
 # def StahostSmeshLineynoe(Radiuse):
 #     difuz = kT / (6.0 * xp.pi * Radiuse * Vyazkost)
 
 #     return RandNormVec() * ((2 * difuz * delta_T)**0.5 * gauss(0, 1))
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
+## @jit(fastmath = True, nopython = True, parallel = True)
 # def StahostSmeshUglovoe(Radiuse):
 #     difuz = kT / (8.0 * xp.pi * Radiuse**3 * Vyazkost)
 
 #     return RandNormVec() * ((2 * difuz * delta_T)**0.5 * gauss(0, 1))
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
+## @jit(fastmath = True, nopython = True, parallel = True)
 # def GeneralLoop(mass):
 #     for x in range(len(mass)):
 #         mass[x] = Kinematika(mass[x])
@@ -319,12 +353,12 @@ Moment = np.vectorize(_Moment, otypes=[float], signature='(a),(s),(d),(m),(k)->(
 #     return mass
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
+## @jit(fastmath = True, nopython = True, parallel = True)
 # def Dot(a, b):
 #     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
+## @jit(fastmath = True, nopython = True, parallel = True)
 # def RandNormVec():
 #     a1 = 1 - 2 * random()
 #     a2 = 1 - 2 * random()
@@ -334,12 +368,12 @@ Moment = np.vectorize(_Moment, otypes=[float], signature='(a),(s),(d),(m),(k)->(
 #     return xp.array([a1 / sq, a2 / sq, a3 / sq])
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
+## @jit(fastmath = True, nopython = True, parallel = True)
 # def Culculete(pom):
 #     return xp.sqrt(xp.sum(xp.square(xp.copy(pom.reshape(len(pom), 7 * 3)[:, NaprUgl * 3:NaprUgl * 3 + 3])), axis = 1)) * MagMom
 
 
-# @jit(fastmath = True, nopython = True, parallel = True)
+## @jit(fastmath = True, nopython = True, parallel = True)
 # def RotatinVec(vec, axis, ugol):
 #     nK = math.sqrt(axis[0]**2 + axis[2]**2 + axis[1]**2)
 #     axis[0], axis[1], axis[2] = axis[0] / nK, axis[1] / nK, axis[2] / nK
