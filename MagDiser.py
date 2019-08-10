@@ -27,8 +27,8 @@ xp = np
 #@markdown Настройка переменных системы
 #@markdown ---
 
-CisloChastic = 24 #@param {type: "integer"}
-KolvoIteraciy = 30000 #@param {type: "integer"}
+CisloChastic = 26 #@param {type: "integer"}
+KolvoIteraciy = 300 #@param {type: "integer"}
 
 # Paskal*sekunda
 Vyazkost = 2.15e-3 #@param {type: "number"}
@@ -188,15 +188,15 @@ if Iteraciy > 0:
         scince_data['Varibles']['N'] += 1
         N = scince_data['Varibles']['N']
 
-        # MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.MathKernel(
-        #     MatrixKoordinat,
-        #     MatrixNamagnicennosti,
-        #     MatrixSkorosti,
-        #     MatrixUglSkorosti,
-        #     MatrixSili,
-        #     MatrixMoenta,
-        #     N
-        # )
+        MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.MathKernel(
+            MatrixKoordinat,
+            MatrixNamagnicennosti,
+            MatrixSkorosti,
+            MatrixUglSkorosti,
+            MatrixSili,
+            MatrixMoenta,
+            N
+        )
         # MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.GeneralLoop(
         #     MatrixKoordinat,
         #     MatrixNamagnicennosti,
