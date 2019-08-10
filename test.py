@@ -3,8 +3,8 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-import sys
-sys.path.insert(0, './lib')
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+
 import MathLib as m
 
 xp = np
@@ -15,20 +15,57 @@ m.Hy_amplitud = 0
 m.Frequency = .2
 m.Radiuse = 3
 m.Dlina_PAV = 1
+m.GraniciVselennoy = 100
 
-a = []
-for x in range(1000000):
-    a.append([0, 7, 0,])
-    a.append([0, 7.9, 0,])
-    a.append([0, 10, 0,])
+CisloChastic = 88
 
-a.append([np.Infinity, np.Infinity, np.Infinity,])
+n = np.array([0.0,0.0,1.0])
+mK = np.array([
+    [0.0,0.0,5.0],
+    [4.0,0.0,3.0],
+    [3.0,4.0,0.0],
+    [0.0,4.0,3.0],
+    [4.0,0.0,-3.0],
+    [4.0,-3.0,0.0]
+])
+mU = np.array([
+    [0.0,0.0,-1.0],
+    [0.0,-1.0,0.0],
+    [-1.0,0.0,0.0],
+    [0.0,0.0,1.0],
+    [0.0,1.0,0.0],
+    [1.0,0.0,0.0]
+])
+m1 = np.array([
+    [0.0,0.0,-1.0],
+    [0.0,-1.0,0.0],
+    [-1.0,0.0,0.0],
+    [0.0,0.0,1.0],
+    [0.0,1.0,0.0],
+    [1.0,0.0,0.0]
+])
+m2 = np.array([
+    [0.0,0.0,-1.0],
+    [0.0,-1.0,0.0],
+    [-1.0,0.0,0.0],
+    [0.0,0.0,1.0],
+    [0.0,1.0,0.0],
+    [1.0,0.0,0.0]
+])
+r = np.array([0.0,0.0,10.0])
+u = np.array([0.0,0.0,1.0])
+# print(m.VneshPole(0, mU))
+# print(m.SteerOttalk(mK,u,r))
+# print(m.Moment(n,mK,mU,u,r))
+# print(m.Sila(n,mK,mU,u,r))
+print(m.MathKernel(mK,mU,mK,mU,m1,m2,0, 0))
 
-a = xp.array(a, dtype = xp.float64)
+# koordi = MatrixUglSkorostiы
 
-b = xp.array([0, 0, 0,])
-s = xp.array([1, 0, 0,])
+# fig = plt.figure(figsize=(12, 12))
+# ax = fig.add_subplot(111, projection='3d')
 
-t = time.time()
-print(m.SteerOttalk(a, s, b))
-print(time.time() - t)
+# x, y, z = xp.copy(koordi[:, :1]), xp.copy(koordi[:, 1:2]), xp.copy(koordi[:, 2:3])
+# ax.scatter(x, y, z, marker = 'o')
+
+# plt.show()
