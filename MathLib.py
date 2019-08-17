@@ -248,6 +248,12 @@ Moment = np.vectorize(_Moment, otypes=[float], signature='(a),(s),(d),(m),(k)->(
 
 #@jit(fastmath = True, nopython = True, parallel = True)
 def _Cross(A, B):
+    """Функция расчёта векторно произведения бвух трёхмерных векторов
+    
+    Arguments:
+        A {array} -- Вектор над которым будут производить век. умножение
+        B {array} -- Вектор который будет производить век. умножение
+    """
     return xp.array([
         A[1] * B[2] - A[2] * B[1],
         A[2] * B[0] - A[0] * B[2],
@@ -255,6 +261,20 @@ def _Cross(A, B):
     ], dtype = xp.float64)
 
 Cross = np.vectorize(_Cross, otypes=[float], signature='(m),(k)->(k)')
+
+
+#@jit(fastmath = True, nopython = True, parallel = True)
+def _PorvrkaGrani(koord):
+    """Функция проверки "не вышлали координата за пределы ячейки".
+    Она вернёт частицу во внетрь ячейки, даже если её отфигачела на километры.
+    
+    Arguments:
+        koord {array} -- Вектор координат частиц
+    """
+    return koord - GraniciVselennoy * int(koord / GraniciVselennoy)
+
+PorvrkaGrani = np.vectorize(_PorvrkaGrani, otypes=[float], signature='()->()')
+
 
 #@jit(fastmath = True, parallel = True) # , nopython = True
 def MathKernel(MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta, N, CisloProekciy = 4):
