@@ -26,7 +26,7 @@ mK = np.array([
     [3.0,4.0,0.0],
     [0.0,4.0,3.0],
     [4.0,0.0,-3.0],
-    [4.0,-3.0,0.0]
+    [-990.0,310.0,10.0]
 ])
 mU = np.array([
     [0.0,0.0,-1.0],
@@ -52,13 +52,14 @@ m2 = np.array([
     [0.0,1.0,0.0],
     [1.0,0.0,0.0]
 ])
-r = np.array([0.0,0.0,10.0])
+r = np.array([-90.0,110.0,10.0])
 u = np.array([0.0,0.0,1.0])
 # print(m.VneshPole(0, mU))
 # print(m.SteerOttalk(mK,u,r))
 # print(m.Moment(n,mK,mU,u,r))
 # print(m.Sila(n,mK,mU,u,r))
-print(m.MathKernel(mK,mU,mK,mU,m1,m2,0, 0))
+# print(m.MathKernel(mK,mU,mK,mU,m1,m2,0, 0))
+print(m.PorvrkaGrani(mK))
 
 # koordi = MatrixUglSkorostiы
 
