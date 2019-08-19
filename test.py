@@ -54,11 +54,11 @@ m2 = np.array([
 ])
 r = np.array([-90.0,110.0,10.0])
 u = np.array([0.0,0.0,1.0])
-# print(m.VneshPole(0, mU))
-# print(m.SteerOttalk(mK,u,r))
-# print(m.Moment(n,mK,mU,u,r))
-# print(m.Sila(n,mK,mU,u,r))
-# print(m.MathKernel(mK,mU,mK,mU,m1,m2,0, 0))
+print(m.VneshPole(0, mU))
+print(m.SteerOttalk(mK,u,r))
+print(m.Moment(n,mK,mU,u,r))
+print(m.Sila(n,mK,mU,u,r))
+print(m.MathKernel(mK,mU,m1,m2,0, 0))
 print(m.PorvrkaGrani(mK))
 
 # koordi = MatrixUglSkorostiы
