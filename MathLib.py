@@ -332,26 +332,6 @@ def MathKernel(MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUgl
 
 
 ## @jit(fastmath = True, nopython = True, parallel = True)
-# def PorvrkaGrani(mass):
-#     if mass[0][0] > GraniciVselennoy:
-#         mass[0] = xp.array([mass[0][0] - 2 * GraniciVselennoy, mass[0][1], mass[0][2]])
-#     elif mass[0][0] < -GraniciVselennoy:
-#         mass[0] = xp.array([mass[0][0] + 2 * GraniciVselennoy, mass[0][1], mass[0][2]])
-
-#     if mass[0][1] > GraniciVselennoy:
-#         mass[0] = xp.array([mass[0][0], mass[0][1] - 2 * GraniciVselennoy, mass[0][2]])
-#     elif mass[0][1] < -GraniciVselennoy:
-#         mass[0] = xp.array([mass[0][0], mass[0][1] + 2 * GraniciVselennoy, mass[0][2]])
-
-#     if mass[0][2] > GraniciVselennoy:
-#         mass[0] = xp.array([mass[0][0], mass[0][1], mass[0][2] - 2 * GraniciVselennoy])
-#     elif mass[0][2] < -GraniciVselennoy:
-#         mass[0] = xp.array([mass[0][0], mass[0][1], mass[0][2] + 2 * GraniciVselennoy])
-
-#     return mass
-
-
-## @jit(fastmath = True, nopython = True, parallel = True)
 # def StahostSmeshLineynoe(Radiuse):
 #     difuz = kT / (6.0 * xp.pi * Radiuse * Vyazkost)
 
@@ -371,26 +351,6 @@ def MathKernel(MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUgl
 #         mass[x] = Kinematika(mass[x])
 
 #     return mass
-
-
-## @jit(fastmath = True, nopython = True, parallel = True)
-# def Dot(a, b):
-#     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-
-
-## @jit(fastmath = True, nopython = True, parallel = True)
-# def RandNormVec():
-#     a1 = 1 - 2 * random()
-#     a2 = 1 - 2 * random()
-#     a3 = 1 - 2 * random()
-#     sq = math.sqrt(a1**2 + a2**2 + a3**2)
-
-#     return xp.array([a1 / sq, a2 / sq, a3 / sq])
-
-
-## @jit(fastmath = True, nopython = True, parallel = True)
-# def Culculete(pom):
-#     return xp.sqrt(xp.sum(xp.square(xp.copy(pom.reshape(len(pom), 7 * 3)[:, NaprUgl * 3:NaprUgl * 3 + 3])), axis = 1)) * MagMom
 
 
 ## @jit(fastmath = True, nopython = True, parallel = True)
