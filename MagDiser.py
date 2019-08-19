@@ -135,11 +135,9 @@ if os.path.exists(pickelPath):
 
 if new_experiment:
     print('Запускаем новый опыт')
-    MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti = m.createrChastic(
+    MatrixKoordinat, MatrixNamagnicennosti = m.createrChastic(
         MatrixKoordinat,
-        MatrixNamagnicennosti,
-        MatrixSkorosti,
-        MatrixUglSkorosti
+        MatrixNamagnicennosti
     )
     scince_data['Varibles']['MatrixKoordinat'] = MatrixKoordinat
     scince_data['Varibles']['MatrixNamagnicennosti'] = MatrixNamagnicennosti
@@ -155,8 +153,6 @@ if Iteraciy > 0:
     print('\n Начало опыта')
     scince_data['Varibles']['MatrixKoordinat'] = MatrixKoordinat
     scince_data['Varibles']['MatrixNamagnicennosti'] = MatrixNamagnicennosti
-    scince_data['Varibles']['MatrixSkorosti'] = MatrixSkorosti
-    scince_data['Varibles']['MatrixUglSkorosti'] = MatrixUglSkorosti
     scince_data['Varibles']['Result'].append(m.Culculete(MatrixNamagnicennosti))
     scince_data['Varibles']['H'].append(m.H(0) * U0)
     TABLE_DATA = (
@@ -191,11 +187,9 @@ if Iteraciy > 0:
             MatrixMoenta,
             N
         )
-        # MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.GeneralLoop(
+        # MatrixKoordinat, MatrixNamagnicennosti, MatrixSili, MatrixMoenta = m.GeneralLoop(
         #     MatrixKoordinat,
         #     MatrixNamagnicennosti,
-        #     MatrixSkorosti,
-        #     MatrixUglSkorosti,
         #     MatrixSili,
         #     MatrixMoenta,
         #     N
