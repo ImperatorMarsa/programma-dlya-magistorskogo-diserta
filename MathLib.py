@@ -277,7 +277,7 @@ PorvrkaGrani = np.vectorize(_PorvrkaGrani, otypes=[float], signature='()->()')
 
 
 #@jit(fastmath = True, parallel = True) # , nopython = True
-def MathKernel(MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta, N, CisloProekciy = 4):
+def MathKernel(MatrixKoordinat, MatrixNamagnicennosti, MatrixSili, MatrixMoenta, N, CisloProekciy = 4):
     MatrixMoenta += VneshPole(N, MatrixNamagnicennosti)
     lenses = len(MatrixKoordinat)
     for i in range(lenses):
@@ -297,7 +297,7 @@ def MathKernel(MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUgl
                     MatrixSili += Sila(n, MatrixKoordinat, MatrixNamagnicennosti, onePartickle_u, onePartickle_r)
 
         MatrixKoordinat[i] = xp.copy(onePartickle_r)
-    return MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta
+    return MatrixKoordinat, MatrixNamagnicennosti, MatrixSili, MatrixMoenta
 
 
 # # https://www.desmos.com/calculator/bhjmf8p0pf

@@ -88,8 +88,6 @@ m.Koncintraciya_obyomnaya = Koncintraciya_obyomnaya
 
 MatrixKoordinat = xp.zeros((CisloChastic, 3))
 MatrixNamagnicennosti = xp.zeros((CisloChastic, 3))
-MatrixSkorosti = xp.zeros((CisloChastic, 3))
-MatrixUglSkorosti = xp.zeros((CisloChastic, 3))
 MatrixSili = xp.zeros((CisloChastic, 3))
 MatrixMoenta = xp.zeros((CisloChastic, 3))
 
@@ -118,9 +116,7 @@ scince_data = {
         'MatrixSili' : MatrixSili,
         'MatrixMoenta' : MatrixMoenta,
         'KolvoIteraciy' : KolvoIteraciy,
-        'MatrixSkorosti' : MatrixSkorosti,
         'MatrixKoordinat' : MatrixKoordinat,
-        'MatrixUglSkorosti' : MatrixUglSkorosti,
         'MatrixNamagnicennosti' : MatrixNamagnicennosti,
     }
 }
@@ -188,11 +184,9 @@ if Iteraciy > 0:
         scince_data['Varibles']['N'] += 1
         N = scince_data['Varibles']['N']
 
-        MatrixKoordinat, MatrixNamagnicennosti, MatrixSkorosti, MatrixUglSkorosti, MatrixSili, MatrixMoenta = m.MathKernel(
+        MatrixKoordinat, MatrixNamagnicennosti, MatrixSili, MatrixMoenta = m.MathKernel(
             MatrixKoordinat,
             MatrixNamagnicennosti,
-            MatrixSkorosti,
-            MatrixUglSkorosti,
             MatrixSili,
             MatrixMoenta,
             N
@@ -206,13 +200,11 @@ if Iteraciy > 0:
         #     MatrixMoenta,
         #     N
         # )
-        scince_data['Varibles']['MatrixKoordinat'] = MatrixKoordinat
-        scince_data['Varibles']['MatrixNamagnicennosti'] = MatrixNamagnicennosti
-        scince_data['Varibles']['MatrixSkorosti'] = MatrixSkorosti
-        scince_data['Varibles']['MatrixUglSkorosti'] = MatrixUglSkorosti
         scince_data['Varibles']['Result'].append(m.Culculete(MatrixNamagnicennosti))
         scince_data['Varibles']['H'].append(m.H(N) * U0)
         if time.time() - timeInterput > 600:
+            scince_data['Varibles']['MatrixKoordinat'] = MatrixKoordinat
+            scince_data['Varibles']['MatrixNamagnicennosti'] = MatrixNamagnicennosti
             H_ =  m.H(N)
             print(
                 "\rВыполнено %d из %d итераций \t\tМагнитное поле=%eHx %eHy %eHz"
