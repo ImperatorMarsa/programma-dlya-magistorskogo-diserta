@@ -78,7 +78,7 @@ infinity = xp.array(
     ]
 )
 # <+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=<+>!=
-#@jit(fastmath = True, nopython = True, parallel = True)
+@jit(fastmath = True, nopython = True, parallel = True)
 def H(N):
     """Функция возвращающая вентор магнитной напряженности Н [A/м]
     
@@ -92,7 +92,7 @@ def H(N):
     ], dtype = xp.float64)
 
 
-#@jit(fastmath = True, parallel = True) # , nopython = True
+@jit(fastmath = True, parallel = True, nopython = True)
 def _VneshPole(N, moment):
     """Функция расчёта силы действующая на частицу со стороны внешнего поля
     
@@ -102,14 +102,18 @@ def _VneshPole(N, moment):
         N {integer} -- Номер итерации
         moment {array[float64]} -- Массив векторов намагниченности частиц
     """
-    B = H(N) * U0 # здесь стоит мину, потомучто я ленивая жопка и мне влом переписывать векторное произведение :З
-    return Cross(moment, B)
+    B = H(N) * U0
+    return xp.array([
+        moment[1] * B[2] - moment[2] * B[1],
+        moment[2] * B[0] - moment[0] * B[2],
+        moment[0] * B[1] - moment[1] * B[0],
+    ], dtype = xp.float64)
 
 VneshPole = np.vectorize(_VneshPole, otypes=[float], signature='(),(n)->(n)')
 
 
 # https://www.desmos.com/calculator/ddxmffkqrj
-#@jit(fastmath = True, nopython = True, parallel = True)
+@jit(fastmath = True, nopython = True, parallel = True)
 def _SteerOttalk(matrix, uglVek, radVek):
     """Функция расчёта стерического отталкивания частиц МЖ
 
@@ -186,7 +190,7 @@ def createrChastic(koordi, namag, skor, uglSkor):
     return koordi, namag, skor, uglSkor
 
 
-#@jit(fastmath = True, nopython = True, parallel = True)
+@jit(fastmath = True, nopython = True, parallel = True)
 def Culculete(pom):
     """Функция рассчитывающая среднее значение модуля для матрицы векторов
     
@@ -196,7 +200,7 @@ def Culculete(pom):
     return xp.sum(xp.sqrt(xp.sum(xp.square(xp.copy(pom)), axis = 1)))
 
 
-#@jit(fastmath = True, nopython = True, parallel = True)
+@jit(fastmath = True, nopython = True, parallel = True)
 def _Sila(n, matrix_K, matrix_U, uglVek, radVek):
     """Функция расчёта силы взаимодействия двух маг диполей
     
@@ -223,7 +227,7 @@ def _Sila(n, matrix_K, matrix_U, uglVek, radVek):
 Sila = np.vectorize(_Sila, otypes=[float], signature='(a),(s),(d),(m),(k)->(k)')
 
 
-#@jit(fastmath = True, parallel = True) # , nopython = True
+@jit(fastmath = True, parallel = True, nopython = True)
 def _Moment(n, matrix_K, matrix_U, uglVek, radVek):
     """Функция расчёта силы взаимодействия двух маг диполей
     
@@ -239,14 +243,18 @@ def _Moment(n, matrix_K, matrix_U, uglVek, radVek):
     distVek /= dist
     B_mI = (
         U0 / (4 * xp.pi)
-         * (3 * distVek * (uglVek @ distVek) - uglVek) / (dist**3)
+        * (3 * distVek * (uglVek @ distVek) - uglVek) / (dist**3)
     )
-    return Cross(matrix_U, B_mI)
+    return xp.array([
+        matrix_U[1] * B_mI[2] - matrix_U[2] * B_mI[1],
+        matrix_U[2] * B_mI[0] - matrix_U[0] * B_mI[2],
+        matrix_U[0] * B_mI[1] - matrix_U[1] * B_mI[0],
+    ], dtype = xp.float64)
 
-Moment = np.vectorize(_Moment, otypes=[float], signature='(a),(s),(d),(m),(k)->(k)')
+Moment = np.vectorize(_Moment, otypes=[float], signature='(a),(s),(d),(f),(g)->(h)')
 
 
-#@jit(fastmath = True, nopython = True, parallel = True)
+@jit(fastmath = True, nopython = True, parallel = True)
 def _Cross(A, B):
     """Функция расчёта векторно произведения бвух трёхмерных векторов
     
@@ -263,7 +271,7 @@ def _Cross(A, B):
 Cross = np.vectorize(_Cross, otypes=[float], signature='(m),(k)->(k)')
 
 
-#@jit(fastmath = True, nopython = True, parallel = True)
+@jit(fastmath = True, nopython = True, parallel = True)
 def _PorvrkaGrani(koord):
     """Функция проверки "не вышлали координата за пределы ячейки".
     Она вернёт частицу во внетрь ячейки, даже если её отфигачела на километры.
@@ -276,7 +284,7 @@ def _PorvrkaGrani(koord):
 PorvrkaGrani = np.vectorize(_PorvrkaGrani, otypes=[float], signature='()->()')
 
 
-#@jit(fastmath = True, parallel = True) # , nopython = True
+@jit(fastmath = True, parallel = True) #, nopython = True
 def MathKernel(MatrixKoordinat, MatrixNamagnicennosti, MatrixSili, MatrixMoenta, N, CisloProekciy = 4):
     MatrixMoenta += VneshPole(N, MatrixNamagnicennosti)
     lenses = len(MatrixKoordinat)
